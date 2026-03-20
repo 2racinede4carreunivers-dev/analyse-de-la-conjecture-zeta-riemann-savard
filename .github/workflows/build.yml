@@ -13,11 +13,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # --- INSTALLATION TECTONIC (LaTeX minimal) ---
+    # --- INSTALLATION TECTONIC (méthode officielle) ---
     - name: Install Tectonic
       run: |
-        sudo apt-get update
-        sudo apt-get install -y tectonic
+        curl --proto '=https' --tlsv1.2 -sSf https://tectonic.dev/install.sh | sh
 
     # --- INSTALLATION ISABELLE 2026 ---
     - name: Install Isabelle 2026
@@ -30,12 +29,12 @@ jobs:
     # --- COMPILATION DES FICHIERS LATEX ---
     - name: Compile LaTeX files
       run: |
-        tectonic geometrie_du_spectre_premier.tex
-        tectonic geometry_prime_spectrum.tex
-        tectonic philosophy_geometry_prime_numbrer.tex
-        tectonic postulat_univers_carre.tex
-        tectonic teleosemantique_analogiste_spectre_premier.tex
-        tectonic mecanique_chaos_discret.tex
+        tectonic geometrie_du_spectre_premier.tex --keep-intermediates --shell-escape
+        tectonic geometry_prime_spectrum.tex --keep-intermediates --shell-escape
+        tectonic philosophy_geometry_prime_numbrer.tex --keep-intermediates --shell-escape
+        tectonic postulat_univers_carre.tex --keep-intermediates --shell-escape
+        tectonic teleosemantique_analogiste_spectre_premier.tex --keep-intermediates --shell-escape
+        tectonic mecanique_chaos_discret.tex --keep-intermediates --shell-escape
 
     # --- COMPILATION DES FICHIERS ISABELLE ---
     - name: Build Isabelle theories
