@@ -1,13 +1,15 @@
-name: Build Isabelle + LaTeX (version courte active et neutralisée)
+PS C:\univers_carre> notepad .github\workflows\build.yml
+PS C:\univers_carre> type .github\workflows\build.yml
+name: Build Isabelle + LaTeX (version courte active et neutralisÃ©e)
 
 on:
   workflow_dispatch:   # Lancement manuel uniquement
   # push:
   #   branches:
-  #     - main          # Décommenter pour activer le déclenchement automatique
+  #     - main          # DÃ©commenter pour activer le dÃ©clenchement automatique
 
 # ---------------------------------------------------------
-# VERSION NEUTRALISÉE (active par défaut)
+# VERSION NEUTRALISÃ‰E (active par dÃ©faut)
 # ---------------------------------------------------------
 jobs:
   build-and-attest:
@@ -15,11 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Neutralisation
-        run: echo "Workflow neutralisé. Voir README pour l'activer."
+        run: echo "Workflow neutralisÃ©. Voir README pour l'activer."
 
 # ---------------------------------------------------------
-# VERSION ACTIVE (désactivée par défaut)
-# Pour activer : décommenter ce bloc et commenter le bloc neutralisé
+# VERSION ACTIVE (dÃ©sactivÃ©e par dÃ©faut)
+# Pour activer : dÃ©commenter ce bloc et commenter le bloc neutralisÃ©
 # ---------------------------------------------------------
 
 # jobs:
@@ -49,10 +51,10 @@ jobs:
 #       - name: Isabelle build (certification HOL)
 #         run: |
 #           if [ -f ROOT ]; then
-#             echo "ROOT détecté — compilation complète"
+#             echo "ROOT dÃ©tectÃ© â€” compilation complÃ¨te"
 #             isabelle build -D .
 #           else
-#             echo "Pas de ROOT — certification des .thy individuels"
+#             echo "Pas de ROOT â€” certification des .thy individuels"        
 #             shopt -s nullglob
 #             for thy in *.thy; do
 #               echo "Certification de $thy"
@@ -65,9 +67,9 @@ jobs:
 #           shopt -s nullglob
 #           for file in *.tex; do
 #             echo "Compilation de $file"
-#             pdflatex -shell-escape -interaction=nonstopmode "$file" || true
-#             pdflatex -shell-escape -interaction=nonstopmode "$file" || true
-#             pdflatex -shell-escape -interaction=nonstopmode "$file" || true
+#             pdflatex -shell-escape -interaction=nonstopmode "$file" || true  
+#             pdflatex -shell-escape -interaction=nonstopmode "$file" || true  
+#             pdflatex -shell-escape -interaction=nonstopmode "$file" || true  
 #           done
 #
 #       - name: Upload PDFs
@@ -75,3 +77,4 @@ jobs:
 #         with:
 #           name: pdfs
 #           path: "*.pdf"
+PS C:\univers_carre> 
