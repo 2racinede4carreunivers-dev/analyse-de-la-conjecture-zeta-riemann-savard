@@ -20,10 +20,13 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-science python3-pygments
 
-    # --- Installation minimale Isabelle ---
-    - name: Install Isabelle minimal
+    # --- Installation d'Isabelle depuis l'archive officielle ---
+    - name: Install Isabelle
       run: |
-        sudo apt-get install -y isabelle
+        wget https://isabelle.in.tum.de/dist/Isabelle2024_linux.tar.gz
+        tar -xzf Isabelle2024_linux.tar.gz
+        sudo mv Isabelle2024 /opt/isabelle
+        echo "/opt/isabelle/bin" >> $GITHUB_PATH
 
     # --- Compilation des fichiers LaTeX ---
     - name: Compile LaTeX files
@@ -35,7 +38,7 @@ jobs:
         pdflatex -shell-escape postulat_univers_carre.tex
         pdflatex -shell-escape teleosemantique_analogiste_spectre_premier.tex
 
-    # --- Compilation des scripts Isabelle ---
+    # --- Compilation des théories Isabelle ---
     - name: Build Isabelle theories
       run: |
         isabelle build -D .
