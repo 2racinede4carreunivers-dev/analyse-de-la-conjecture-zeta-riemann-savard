@@ -13,10 +13,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # --- INSTALLATION TECTONIC ---
+    # --- INSTALLATION TECTONIC (méthode binaire officielle) ---
     - name: Install Tectonic
       run: |
-        curl --proto '=https' --tlsv1.2 -sSf https://tectonic.dev/install.sh | sh
+        wget https://github.com/tectonic-typesetting/tectonic/releases/latest/download/tectonic-x86_64-unknown-linux-gnu.tar.gz
+        tar -xzf tectonic-x86_64-unknown-linux-gnu.tar.gz
+        sudo mv tectonic /usr/local/bin/
 
     # --- INSTALLATION ISABELLE 2025 ---
     - name: Install Isabelle 2025
