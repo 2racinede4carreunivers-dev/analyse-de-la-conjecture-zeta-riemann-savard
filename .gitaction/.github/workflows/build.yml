@@ -1,0 +1,41 @@
+name: Build-LaTeX-Isabelle
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # --- Installation minimale LaTeX ---
+    - name: Install minimal TeXLive
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-science python3-pygments
+
+    # --- Installation minimale Isabelle ---
+    - name: Install Isabelle minimal
+      run: |
+        sudo apt-get install -y isabelle
+
+    # --- Compilation des fichiers LaTeX ---
+    - name: Compile LaTeX files
+      run: |
+        pdflatex -shell-escape geometrie_du_spectre_premier.tex
+        pdflatex -shell-escape geometry_prime_spectrum.tex
+        pdflatex -shell-escape mecanique_chaos_discret.tex
+        pdflatex -shell-escape pilosophy_geometry_of_prime_number.tex
+        pdflatex -shell-escape postulat_univers_carre.tex
+        pdflatex -shell-escape teleosemantique_analogiste_spectre_premier.tex
+
+    # --- Compilation des scripts Isabelle ---
+    - name: Build Isabelle theories
+      run: |
+        isabelle build -D .
