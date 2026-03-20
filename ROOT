@@ -4,4 +4,4 @@ session Univers_Carre = HOL +
     mecanique_discret
     methode_de_philippot
     methode_spectral
-    postulat_carre
+    postulat_carrenotepad .github\workflows\build.yml

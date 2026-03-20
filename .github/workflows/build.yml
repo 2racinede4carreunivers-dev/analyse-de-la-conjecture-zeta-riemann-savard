@@ -37,6 +37,10 @@ jobs:
         pdflatex -shell-escape pilosophy_geometry_of_prime_number.tex
         pdflatex -shell-escape postulat_univers_carre.tex
         pdflatex -shell-escape teleosemantique_analogiste_spectre_premier.tex
+        pdflatex -shell-escape geometrie_spectre_premier_en.tex
+        pdflatex -shell-escape geometrie_spectre_premier_fr.tex
+        pdflatex -shell-escape philosophie_geometrie_spectre_premier.tex
+        pdflatex -shell-escape mecanique_harmonique_chaos_discret.tex
 
     # --- Compilation des théories Isabelle ---
     - name: Build Isabelle theories
