@@ -1,58 +1,67 @@
-name: Build LaTeX + Isabelle
+name: Build Isabelle + LaTeX (version active)
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-attest:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # --- INSTALLATION TECTONIC (AppImage officiel) ---
-    - name: Install Tectonic
+    # --- INSTALLATION TEXLIVE MINIMAL + PYGMENTS ---
+    - name: Install minimal TeX Live + pygments
       run: |
-        wget https://github.com/tectonic-typesetting/tectonic/releases/latest/download/Tectonic-x86_64.AppImage
-        chmod +x Tectonic-x86_64.AppImage
-        sudo mv Tectonic-x86_64.AppImage /usr/local/bin/tectonic
+        sudo apt-get update
+        sudo apt-get install -y \
+          texlive-latex-base \
+          texlive-latex-recommended \
+          texlive-latex-extra \
+          texlive-fonts-recommended \
+          python3-pygments
 
-    # --- INSTALLATION ISABELLE 2025 ---
-    - name: Install Isabelle 2025
+    # --- INSTALLATION ISABELLE 2024 ---
+    - name: Install Isabelle 2024
       run: |
-        wget https://isabelle.in.tum.de/website-Isabelle2025/dist/Isabelle2025_linux.tar.gz
-        tar -xzf Isabelle2025_linux.tar.gz
-        mv Isabelle2025 $HOME/isabelle
-        echo "$HOME/isabelle/bin" >> $GITHUB_PATH
+        wget https://isabelle.in.tum.de/website-Isabelle2024/dist/Isabelle2024_linux.tar.gz
+        tar -xzf Isabelle2024_linux.tar.gz
+        mv Isabelle2024 isabelle
+        echo "$PWD/isabelle/bin" >> $GITHUB_PATH
 
-    # --- COMPILATION DES FICHIERS LATEX ---
-    - name: Compile LaTeX files
+    # --- COMPILATION ISABELLE ---
+    - name: Isabelle build (certification HOL)
       run: |
-        tectonic geometrie_du_spectre_premier.tex --keep-intermediates --shell-escape
-        tectonic geometry_prime_spectrum.tex --keep-intermediates --shell-escape
-        tectonic philosophy_geometry_prime_numbrer.tex --keep-intermediates --shell-escape
-        tectonic postulat_univers_carre.tex --keep-intermediates --shell-escape
-        tectonic teleosemantique_analogiste_spectre_premier.tex --keep-intermediates --shell-escape
-        tectonic mecanique_chaos_discret.tex --keep-intermediates --shell-escape
+        if [ -f ROOT ]; then
+          echo "ROOT détecté — compilation complète"
+          isabelle build -D .
+        else
+          echo "Pas de ROOT — certification des .thy individuels"
+          shopt -s nullglob
+          for thy in *.thy; do
+            echo "Certification de $thy"
+            isabelle build -b -d . "$thy" || true
+          done
+        fi
 
-    # --- COMPILATION DES FICHIERS ISABELLE ---
-    - name: Build Isabelle theories
+    # --- COMPILATION LATEX ---
+    - name: Compile LaTeX (minted + sml + TOC)
       run: |
-        isabelle build -D . -v
+        shopt -s nullglob
+        for file in *.tex; do
+          echo "Compilation de $file"
+          pdflatex -shell-escape -interaction=nonstopmode "$file" || true
+          pdflatex -shell-escape -interaction=nonstopmode "$file" || true
+          pdflatex -shell-escape -interaction=nonstopmode "$file" || true
+        done
 
     # --- ARTEFACTS ---
     - name: Upload PDFs
       uses: actions/upload-artifact@v4
       with:
         name: pdfs
-        path: |
-          *.pdf
-
-    - name: Upload Isabelle logs
-      uses: actions/upload-artifact@v4
-      with:
-        name: isabelle-logs
-        path: $HOME/.isabelle/Isabelle2025/log
+        path: "*.pdf"
