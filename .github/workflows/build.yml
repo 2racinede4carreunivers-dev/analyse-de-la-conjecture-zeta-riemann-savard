@@ -14,7 +14,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # --- Installation minimale LaTeX ---
     - name: Install minimal TeXLive
       run: |
         sudo apt-get update
@@ -25,15 +24,13 @@ jobs:
           texlive-science \
           python3-pygments
 
-    # --- Installation d'Isabelle depuis l'archive officielle (URL valide) ---
-    - name: Install Isabelle
+    - name: Install Isabelle (stable archive mirror)
       run: |
-        wget https://isabelle.in.tum.de/website-dist/dist/Isabelle2023-1_linux.tar.gz
+        wget https://isabelle.in.tum.de/website-dist/archives/Isabelle2023-1_linux.tar.gz
         tar -xzf Isabelle2023-1_linux.tar.gz
         sudo mv Isabelle2023-1 /opt/isabelle
         echo "/opt/isabelle/bin" >> $GITHUB_PATH
 
-    # --- Compilation des fichiers LaTeX ---
     - name: Compile LaTeX files
       run: |
         pdflatex -shell-escape geometrie_du_spectre_premier.tex
@@ -47,7 +44,6 @@ jobs:
         pdflatex -shell-escape philosophie_geometrie_spectre_premier.tex
         pdflatex -shell-escape mecanique_harmonique_chaos_discret.tex
 
-    # --- Compilation des théories Isabelle ---
     - name: Build Isabelle theories
       run: |
         isabelle build -D .
