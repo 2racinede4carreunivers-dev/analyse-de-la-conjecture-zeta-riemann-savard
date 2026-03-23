@@ -69,3 +69,28 @@ La certification est un succès :
 
 Ces **six PDF** et **quatre fichiers .thy** constituent le cœur et l’âme de ce dépôt.  
 D’autres fichiers HOL, .tex et .pdf seront ajoutés prochainement afin d’enrichir la structure scientifique et téléosémantique du projet.
+
+## [2026-03-21] Mise a jour du document LaTeX
+
+- Ajout d'une definition complete concernant l'analyse numerique metrique dans `geometrie_du_spectre_premier.tex`.
+- Correction et remplacement du tableau de la deuxieme etape de la methode de Philippot.
+- Harmonisation du contenu avec les sections existantes du document.
+
+## [MAJOR] – Ajout du chapitre « espace_philippot » (2026‑03‑23)
+
+### Ajouté
+- Introduction d’un nouveau chapitre majeur : **Espace de Philippôt**.
+- Ajout du fichier `espace_philippot.thy`, entièrement formalisé en HOL Isabelle.
+- Ajout du fichier associé `espace_philippot.tex` pour la documentation LaTeX.
+
+### Impact
+- Ce chapitre marque le début d’une nouvelle section de la théorie unifiée  
+  **« L’univers est au carré »**.
+- Le fichier `.thy` est maintenant intégré à la session Isabelle via le ROOT  
+  et sera compilé automatiquement par le workflow GitHub Actions.
+- Une future mise à jour du `README.md` détaillera ce nouveau chapitre.
+- Les autres fichiers du dépôt seront progressivement harmonisés pour refléter  
+  cette nouvelle structure.
+
+### Notes
+- Ce commit sera associé à un **tag MAJOR** dans les releases GitHub.
