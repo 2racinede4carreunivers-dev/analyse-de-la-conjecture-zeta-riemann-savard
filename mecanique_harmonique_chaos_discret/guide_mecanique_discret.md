@@ -533,4 +533,3 @@ L’utilisateur DOIT fournir un effort intellectuel pour interpréter les résul
 
 ---
 
-# ✔️ Fin du Chapitre D
