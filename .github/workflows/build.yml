@@ -1,4 +1,4 @@
-name: Build Isabelle + LaTeX + Release automatique
+#name: Build Isabelle + LaTeX + Release automatique
 
 on:
   push:

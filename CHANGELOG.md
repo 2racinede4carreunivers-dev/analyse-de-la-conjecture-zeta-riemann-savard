@@ -153,11 +153,45 @@ compléter la documentation du dépôt.
 - Tous les fichiers HOL sont documentés.
 - La structure documentaire est désormais cohérente, stable et professionnelle.
 
-### 🟪 Conclusion de la journée
+###  Conclusion de la journée
 Ce commit conclut officiellement la journée du **24 mars 2026**.  
 Les guides, le README et les workflows sont en place.  
 La documentation du projet atteint un niveau de maturité remarquable.
 
 ---
 
-# ✔ Fin du bloc Markdown
+#  Fin du bloc Markdown
+
+## Mise à jour du workflow — Release automatique avec attestation cryptographique
+**Date : 2026-03-26**  
+**Type : infra / fix**
+
+###  Mise à niveau du workflow `build-and-attest.yml`
+Le workflow principal situé dans `.github/workflows/build-and-attest.yml` a été entièrement mis à jour afin d’intégrer :
+
+- la génération automatique d’une **Release GitHub** à chaque commit manuel sur la branche `main`,
+- la création d’une **attestation cryptographique (build provenance)** pour tous les PDF générés,
+- l’ajout des permissions nécessaires (`id-token`, `attestations`, `contents`),
+- l’intégration du **version bump automatique** basé sur le message de commit (`major:`, `feat:`, `fix:`),
+- la publication automatique des PDF compilés dans chaque Release.
+
+Cette mise à niveau harmonise le dépôt *analyse_conjecture_riemann_savard* avec la procédure déjà en place dans *formation_evolutive_savard*.
+
+---
+
+###  Ajout du rapport cryptographique (Build Provenance)
+Un nouveau mécanisme d’attestation cryptographique a été ajouté.  
+Chaque PDF produit par le workflow est maintenant accompagné d’un rapport officiel signé par GitHub Actions, garantissant :
+
+- l’intégrité du fichier,
+- la provenance exacte (commit, workflow, runner),
+- la non‑altération après compilation.
+
+Ce mécanisme constitue désormais **la procédure standard et définitive** pour toutes les futures releases du dépôt.
+
+---
+
+###  Notes complémentaires
+- Aucun changement n’a été apporté au contenu des fichiers `.thy` ou `.tex`.
+- La compilation Isabelle et LaTeX reste inchangée.
+- Les artefacts PDF continuent d’être générés comme
