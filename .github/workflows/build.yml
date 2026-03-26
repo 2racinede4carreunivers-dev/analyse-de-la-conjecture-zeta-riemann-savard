@@ -1,4 +1,4 @@
-name: Build Isabelle + LaTeX (version active)
+name: Build Isabelle + LaTeX + Release automatique
 
 on:
   push:
@@ -6,8 +6,13 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
 jobs:
-  build-and-attest:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -36,7 +41,6 @@ jobs:
     # --- COMPILATION ISABELLE ---
     - name: Isabelle build (certification HOL)
       run: |
-        # Ajout du nouveau fichier espace_philippot.thy dans la session via ROOT
         if [ -f ROOT ]; then
           echo "ROOT détecté — compilation complète"
           isabelle build -D .
@@ -60,9 +64,91 @@ jobs:
           pdflatex -shell-escape -interaction=nonstopmode "$file" || true
         done
 
-    # --- ARTEFACTS ---
+    # --- ARTEFACTS PDF ---
     - name: Upload PDFs
       uses: actions/upload-artifact@v4
       with:
         name: pdfs
         path: "*.pdf"
+
+    # --- ATTESTATION CRYPTOGRAPHIQUE ---
+    - name: Generate build provenance
+      uses: actions/attest-build-provenance@v1
+      with:
+        subject-path: "*.pdf"
+
+    # --- EXTRACTION DU MESSAGE DE COMMIT ---
+    - name: Extract commit message
+      id: commit
+      run: |
+        msg=$(git log -1 --pretty=%B)
+        echo "message=$msg" >> $GITHUB_OUTPUT
+
+    # --- DÉTERMINATION DU VERSION BUMP ---
+    - name: Determine version bump
+      id: bump
+      run: |
+        msg="${{ steps.commit.outputs.message }}"
+        if [[ "$msg" == major:* ]]; then
+          echo "level=major" >> $GITHUB_OUTPUT
+        elif [[ "$msg" == feat:* ]]; then
+          echo "level=minor" >> $GITHUB_OUTPUT
+        elif [[ "$msg" == fix:* ]]; then
+          echo "level=patch" >> $GITHUB_OUTPUT
+        else
+          echo "level=patch" >> $GITHUB_OUTPUT
+        fi
+
+    # --- RÉCUPÉRATION DU DERNIER TAG ---
+    - name: Get latest tag
+      id: tag
+      run: |
+        latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "v-acr-0.0.0")
+        echo "latest=$latest" >> $GITHUB_OUTPUT
+
+    # --- CALCUL DE LA NOUVELLE VERSION ---
+    - name: Compute next version
+      id: version
+      run: |
+        level="${{ steps.bump.outputs.level }}"
+        latest="${{ steps.tag.outputs.latest }}"
+        base=${latest#v-acr-}
+        IFS='.' read -r major minor patch <<< "$base"
+
+        if [[ "$level" == "major" ]]; then
+          major=$((major+1)); minor=0; patch=0
+        elif [[ "$level" == "minor" ]]; then
+          minor=$((minor+1)); patch=0
+        else
+          patch=$((patch+1))
+        fi
+
+        new="v-acr-$major.$minor.$patch"
+        echo "new=$new" >> $GITHUB_OUTPUT
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Download PDFs
+      uses: actions/download-artifact@v4
+      with:
+        name: pdfs
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ needs.build.outputs.new }}
+        name: Release ${{ needs.build.outputs.new }}
+        body: |
+          ### Notes
+          Commit message:
+          ${{ needs.build.outputs.message }}
+        files: |
+          *.pdf

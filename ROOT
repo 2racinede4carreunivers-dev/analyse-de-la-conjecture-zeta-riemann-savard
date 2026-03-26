@@ -4,3 +4,4 @@ session Univers_Carre = HOL +
     methode_de_philippot
     methode_spectral
     postulat_carre
+    espace_philippot
