@@ -1,3 +1,6 @@
+
+[![SLSA Provenance Verified](https://img.shields.io/badge/SLSA-Provenance%20Verified-4caf50?style=for-the-badge&logo=github)](https://slsa.dev)
+
 # L'Univers est au Carré - Application Web
 
 ## Vue d'ensemble
