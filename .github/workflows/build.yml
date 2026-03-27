@@ -117,7 +117,6 @@ jobs:
 
         new="v-acr-$major.$minor.$patch"
         echo "new=$new" >> $GITHUB_OUTPUT
-
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -134,6 +133,29 @@ jobs:
         name: pdfs
         path: .
 
+    - name: Generate filtered repository structure
+      id: structure
+      run: |
+        echo "tree<<EOF" >> $GITHUB_OUTPUT
+        find . -type f \( \
+          -name "*.tex" -o \
+          -name "*.thy" -o \
+          -name "*.pdf" -o \
+          -name "README*.md" -o \
+          -name "CHANGELOG.md" -o \
+          -name "SECURITY.md" -o \
+          -name "algorithme_methodologie.md" -o \
+          -name "guide_*.md" \
+        \) | sed 's|^\./||' | sort | awk '
+          BEGIN{FS="/"}
+          {
+            indent = ""
+            for(i=1;i<NF;i++) indent = indent "  "
+            print indent "├── " $NF
+          }
+        ' >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
     - name: Create or Update Release
       id: rel
       uses: ncipollo/release-action@v1
@@ -142,10 +164,63 @@ jobs:
         name: "Release continue — Projet ACR"
         allowUpdates: true
         removeArtifacts: false
-        artifacts: "*.pdf"
+        artifacts: |
+          *.pdf
+          *.tex
+          *.thy
         artifactErrorsFailBuild: true
         body: |
           # 📘 Dossier de Release — Projet ACR
+
+          ## 🧭 Résumé du dépôt
+
+          Le dépôt **analyse_conjecture_riemann_savard** est un projet scientifique et mathématique personnel développé par son auteur, **Philippe Thomas Savard**. Bien que l’auteur ne soit pas affilié au milieu académique, le dépôt se distingue par une rigueur méthodologique constante et une volonté affirmée d’atteindre l’excellence dans l’analyse et la formalisation mathématique.
+
+          L’un des chapitres centraux du dépôt porte sur l’étude de l’énigme de Bernhard Riemann et de sa célèbre conjecture concernant la fonction zêta. Ce sujet ambitieux est abordé à travers des documents explicatifs détaillant les méthodes originales employées par l’auteur pour explorer et tenter de résoudre cette problématique historique.
+
+          Deux validations formelles, entièrement codées en Isabelle/HOL, sont disponibles dans le dépôt. Elles peuvent être consultées, modifiées, partagées ou enrichies conformément aux permissions définies dans la licence du projet. Plusieurs documents PDF accompagnent ces validations formelles et sont générés automatiquement par le workflow GitHub Actions, incluant leurs attestations cryptographiques. Le rapport de certification produit lors de chaque exécution du workflow est également fourni et accessible aux utilisateurs et contributeurs.
+
+          Le dépôt comprend également d’autres chapitres qui s’inscrivent dans une perspective plus large d’unification mathématique, en lien avec la théorie personnelle de l’auteur intitulée **« L’univers est au carré »**. Les différents volets de cette théorie sont présentés et documentés dans les sections correspondantes du dépôt.
+
+          Un fichier **README.md**, situé à la racine du dépôt, présente les informations essentielles concernant l’utilisation du projet, ses règles, son fonctionnement et ses objectifs. L’auteur invite les utilisateurs à le consulter pour toute question relative au dépôt.
+
+          Pour accompagner les validations formelles, plusieurs fichiers de référence sont fournis. Ils expliquent la méthodologie employée, les procédures de reproduction des résultats et les principes théoriques sous-jacents. Un fichier supplémentaire sert de guide méthodologique complet pour les résultats avancés présentés dans les scripts Isabelle/HOL.
+
+          Les mises à jour successives du dépôt sont consignées dans le fichier **CHANGELOG.md**, mis à jour automatiquement à chaque contribution.
+
+          Le dépôt inclut également le code source d’une application web développée par l’auteur. Cette application intègre trois intelligences artificielles — collaborative, socratique et évolutive — dédiées exclusivement à la théorie « L’univers est au carré ». Ces IA s’appuient sur une banque évolutive de 23 questions-réponses, enrichie progressivement par les interactions des utilisateurs. Elles disposent également de 55 documents de référence, incluant les validations formelles Isabelle/HOL, afin de répondre de manière pertinente aux questions portant sur la théorie.
+
+          ## 👤 Informations sur l’auteur et le dépôt
+
+          - **Nom de l’auteur** : Philippe Thomas Savard  
+          - **Titre du dépôt** : *Analyse de la conjecture de Bernhard Riemann — L’univers est au carré*  
+          - **Adresse courriel** : *PhilippethomasSavard@gmail.com*  
+          - **Licence** : Apache 2.0  
+          - **Lieu** : Lévis, Chaudière‑Appalaches, Canada  
+          - **Date de rédaction** : 27 mars 2026  
+
+          L’auteur invite chaleureusement les lecteurs à consulter les documents PDF portant sur la philosophie qui sous‑tend la théorie unifiée **« L’univers est au carré »**, notamment :
+
+          - *Téléosémantique de l’esprit d’un analogiste* — version originale en français  
+          - *Teleosemantics of the Analogist Mind* — version adaptée en anglais  
+
+          Ces documents offrent une perspective essentielle sur les fondements conceptuels de la théorie et complètent les validations formelles Isabelle/HOL présentes dans le dépôt.
+
+          ## 📁 Structure du dépôt (mise à jour automatiquement)
+
+          Voici l’arborescence filtrée du dépôt, générée automatiquement à partir des fichiers pertinents :
+
+          ```
+          ${{ steps.structure.outputs.tree }}
+          ```
+
+          ## 📚 Bibliographie et références formelles
+
+          - **Mathlib (Lean Mathematical Library)**  
+            Dépôt GitHub : https://github.com/leanprover-community/mathlib3.git  
+            Projet collaboratif de formalisation mathématique en Lean, utilisé comme référence pour l’étude formelle de la fonction zêta de Riemann et d’autres théorèmes avancés.
+
+          ---
 
           ## 🔢 Version générée
           ${{ needs.build.outputs.new }}
@@ -156,9 +231,11 @@ jobs:
           ## 📝 Message du commit
           ${{ needs.build.outputs.message }}
 
-          ## 📄 Documents PDF générés
-          Les fichiers PDF suivants ont été générés automatiquement :
-          *(Ils sont attachés à cette release.)*
+          ## 📄 Documents générés et inclus dans la release
+          Les fichiers suivants ont été automatiquement attachés :
+          - Tous les fichiers **PDF**
+          - Tous les fichiers **LaTeX (.tex)**
+          - Tous les fichiers **Isabelle/HOL (.thy)**
 
           ## 🔐 Attestation cryptographique
           Chaque PDF est accompagné d’une attestation SLSA générée automatiquement.
@@ -170,7 +247,7 @@ jobs:
           - Cette release est mise à jour automatiquement à chaque commit manuel.
           - Aucun commit automatique n’est effectué dans le dépôt.
           - La structure de cette release est stable et ne change pas.
-          - Les fichiers PDF sont remplacés proprement à chaque génération.
+          - Les fichiers PDF, TEX et THY sont remplacés proprement à chaque génération.
 
     - name: Release summary
       run: |
