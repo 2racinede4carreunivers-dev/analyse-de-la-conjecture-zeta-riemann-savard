@@ -23,7 +23,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # --- INSTALLATION TEXLIVE MINIMAL + PYGMENTS ---
     - name: Install minimal TeX Live + pygments
       run: |
         sudo apt-get update
@@ -34,7 +33,6 @@ jobs:
           texlive-fonts-recommended \
           python3-pygments
 
-    # --- INSTALLATION ISABELLE 2024 ---
     - name: Install Isabelle 2024
       run: |
         wget https://isabelle.in.tum.de/website-Isabelle2024/dist/Isabelle2024_linux.tar.gz
@@ -42,53 +40,43 @@ jobs:
         mv Isabelle2024 isabelle
         echo "$PWD/isabelle/bin" >> $GITHUB_PATH
 
-    # --- COMPILATION ISABELLE ---
     - name: Isabelle build (certification HOL)
       run: |
         if [ -f ROOT ]; then
-          echo "ROOT détecté — compilation complète"
           isabelle build -D .
         else
-          echo "Pas de ROOT — certification des .thy individuels"
           shopt -s nullglob
           for thy in *.thy; do
-            echo "Certification de $thy"
             isabelle build -b -d . "$thy" || true
           done
         fi
 
-    # --- COMPILATION LATEX ---
     - name: Compile LaTeX (minted + sml + TOC)
       run: |
         shopt -s nullglob
         for file in *.tex; do
-          echo "Compilation de $file"
           pdflatex -shell-escape -interaction=nonstopmode "$file" || true
           pdflatex -shell-escape -interaction=nonstopmode "$file" || true
           pdflatex -shell-escape -interaction=nonstopmode "$file" || true
         done
 
-    # --- ARTEFACTS PDF ---
     - name: Upload PDFs
       uses: actions/upload-artifact@v4
       with:
         name: pdfs
         path: "*.pdf"
 
-    # --- ATTESTATION CRYPTOGRAPHIQUE ---
     - name: Generate build provenance
       uses: actions/attest-build-provenance@v1
       with:
         subject-path: "*.pdf"
 
-    # --- EXTRACTION DU MESSAGE DE COMMIT ---
     - name: Extract commit message
       id: commit
       run: |
         msg=$(git log -1 --pretty=%B)
         echo "message=$msg" >> $GITHUB_OUTPUT
 
-    # --- DÉTERMINATION DU VERSION BUMP ---
     - name: Determine version bump
       id: bump
       run: |
@@ -103,14 +91,12 @@ jobs:
           echo "level=patch" >> $GITHUB_OUTPUT
         fi
 
-    # --- RÉCUPÉRATION DU DERNIER TAG ---
     - name: Get latest tag
       id: tag
       run: |
         latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "v-acr-0.0.0")
         echo "latest=$latest" >> $GITHUB_OUTPUT
 
-    # --- CALCUL DE LA NOUVELLE VERSION ---
     - name: Compute next version
       id: version
       run: |
@@ -130,12 +116,10 @@ jobs:
         new="v-acr-$major.$minor.$patch"
         echo "new=$new" >> $GITHUB_OUTPUT
 
-    # --- RÉSUMÉ DU BUILD ---
     - name: Generate build summary
       run: |
         echo "## 📄 Résumé du build Isabelle + LaTeX" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-
         echo "### 🧾 PDF générés" >> $GITHUB_STEP_SUMMARY
         for f in *.pdf; do
           size=$(stat -c%s "$f")
@@ -143,19 +127,15 @@ jobs:
           echo "- **$f** — ${size} bytes — \`$sha\`" >> $GITHUB_STEP_SUMMARY
         done
         echo "" >> $GITHUB_STEP_SUMMARY
-
         echo "### 🔐 Version générée" >> $GITHUB_STEP_SUMMARY
         echo "- Version : **${{ steps.version.outputs.new }}**" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-
         echo "### 📝 Message du commit" >> $GITHUB_STEP_SUMMARY
         echo "> ${{ steps.commit.outputs.message }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-
         echo "### 🔒 Attestation SLSA" >> $GITHUB_STEP_SUMMARY
         echo "- Provenance cryptographique générée pour tous les PDF." >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-
         echo "### 📦 Artefacts" >> $GITHUB_STEP_SUMMARY
         echo "- Les PDF sont disponibles dans l’onglet *Artifacts*." >> $GITHUB_STEP_SUMMARY
 
@@ -187,17 +167,7 @@ jobs:
         files: |
           *.pdf
         make_latest: true
-        allow_updates: true
+        overwrite_files: true
 
-    # --- RÉSUMÉ DU JOB RELEASE ---
     - name: Release summary
       run: |
-        echo "## 🚀 Résumé de la release" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "- Release créée : **${{ needs.build.outputs.new }}**" >> $GITHUB_STEP_SUMMARY
-        echo "- Lien : ${{ steps.rel.outputs.url }}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 📄 PDF publiés" >> $GITHUB_STEP_SUMMARY
-        for f in *.pdf; do
-          echo "- $f" >> $GITHUB_STEP_SUMMARY
-        done
