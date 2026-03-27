@@ -169,15 +169,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    # --- SUPPRESSION DU TAG EXISTANT (évite immutable release) ---
-    - name: Delete existing tag if present
-      run: |
-        tag="${{ needs.build.outputs.new }}"
-        if git rev-parse "$tag" >/dev/null 2>&1; then
-          echo "Tag $tag already exists — deleting"
-          git push --delete origin "$tag" || true
-        fi
-
     - name: Download PDFs
       uses: actions/download-artifact@v4
       with:
@@ -196,6 +187,7 @@ jobs:
         files: |
           *.pdf
         make_latest: true
+        allow_updates: true
 
     # --- RÉSUMÉ DU JOB RELEASE ---
     - name: Release summary
