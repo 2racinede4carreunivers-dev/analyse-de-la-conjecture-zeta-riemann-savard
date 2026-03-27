@@ -93,10 +93,16 @@ jobs:
           echo "level=patch" >> $GITHUB_OUTPUT
         fi
 
-    - name: Get latest tag
+    - name: Get latest tag (robust fallback)
       id: tag
       run: |
-        latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "v-acr-0.0.0")
+        latest=$(git describe --tags --abbrev=0 2>/dev/null || true)
+        if [[ -z "$latest" ]]; then
+          latest="v-acr-0.0.0"
+        fi
+        if [[ ! "$latest" =~ ^v-acr-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          latest="v-acr-0.0.0"
+        fi
         echo "latest=$latest" >> $GITHUB_OUTPUT
 
     - name: Compute next version
@@ -106,6 +112,10 @@ jobs:
         latest="${{ steps.tag.outputs.latest }}"
         base=${latest#v-acr-}
         IFS='.' read -r major minor patch <<< "$base"
+
+        major=${major:-0}
+        minor=${minor:-0}
+        patch=${patch:-0}
 
         if [[ "$level" == "major" ]]; then
           major=$((major+1)); minor=0; patch=0
@@ -117,6 +127,7 @@ jobs:
 
         new="v-acr-$major.$minor.$patch"
         echo "new=$new" >> $GITHUB_OUTPUT
+
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -204,11 +215,7 @@ jobs:
           - *Téléosémantique de l’esprit d’un analogiste* — version originale en français  
           - *Teleosemantics of the Analogist Mind* — version adaptée en anglais  
 
-          Ces documents offrent une perspective essentielle sur les fondements conceptuels de la théorie et complètent les validations formelles Isabelle/HOL présentes dans le dépôt.
-
           ## 📁 Structure du dépôt (mise à jour automatiquement)
-
-          Voici l’arborescence filtrée du dépôt, générée automatiquement à partir des fichiers pertinents :
 
           ```
           ${{ steps.structure.outputs.tree }}
@@ -232,7 +239,6 @@ jobs:
           ${{ needs.build.outputs.message }}
 
           ## 📄 Documents générés et inclus dans la release
-          Les fichiers suivants ont été automatiquement attachés :
           - Tous les fichiers **PDF**
           - Tous les fichiers **LaTeX (.tex)**
           - Tous les fichiers **Isabelle/HOL (.thy)**
