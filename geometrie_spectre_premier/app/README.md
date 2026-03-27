@@ -1,6 +1,107 @@
 
 [![SLSA Provenance Verified](https://img.shields.io/badge/SLSA-Provenance%20Verified-4caf50?style=for-the-badge&logo=github)](https://slsa.dev)
 
+# 🔐 Provenance cryptographique
+
+Chaque document PDF généré dans ce dépôt est accompagné d’une **provenance cryptographique vérifiable**, conforme au standard **SLSA (Supply-chain Levels for Software Artifacts)**.  
+Cela garantit que chaque artefact publié :
+
+- provient réellement de ce dépôt  
+- a été généré par le workflow GitHub Actions indiqué  
+- n’a pas été modifié après sa création  
+- peut être vérifié localement par n’importe quel utilisateur  
+- possède une attestation signée via **GitHub OIDC**  
+- est reproductible et traçable
+
+---
+
+## 🧬 Chaîne de confiance
+
+À chaque exécution du pipeline :
+
+1. Les sources Isabelle/HOL sont compilées  
+2. Les documents LaTeX sont construits  
+3. Les PDF finaux sont produits  
+4. Une attestation SLSA v1 est générée pour chaque PDF  
+5. Les artefacts sont signés cryptographiquement  
+6. Une release versionnée automatiquement est créée  
+7. Les PDF signés sont attachés à la release  
+8. Un résumé clair est généré dans l’onglet *Résumé* du workflow
+
+---
+
+## 🛡️ Vérification locale des PDF
+
+Vous pouvez vérifier l’authenticité de n’importe quel PDF publié avec :
+
+```bash
+gh attestation verify --owner 2racinede4carreunivers-dev NOM_DU_FICHIER.pdf
+```
+
+Si la provenance est valide, vous verrez :
+
+```
+✓ Verification succeeded!
+```
+
+Cela confirme que :
+
+- le hash SHA‑256 correspond  
+- l’attestation SLSA est valide  
+- le workflow signataire est authentique  
+- le dépôt source est correct  
+- le certificat OIDC est légitime  
+
+---
+
+## 📦 Versionnement automatique
+
+Le pipeline applique un versionnement strict basé sur le message du commit :
+
+| Préfixe du commit | Type | Effet sur la version |
+|-------------------|-------|----------------------|
+| `major:` | Rupture | X.0.0 |
+| `feat:` | Fonctionnalité | 0.X.0 |
+| `fix:` | Correction | 0.0.X |
+| *(autre)* | Patch | 0.0.X |
+
+Les versions suivent le format :
+
+```
+v-acr-MAJOR.MINOR.PATCH
+```
+
+Chaque release GitHub correspond exactement à une version générée par le pipeline.
+
+---
+
+## 📄 Transparence des artefacts
+
+Pour chaque exécution, le workflow génère automatiquement un résumé contenant :
+
+- la liste des PDF produits  
+- leur taille  
+- leur hash SHA‑256  
+- la version générée  
+- le message du commit  
+- la confirmation de la génération des attestations SLSA  
+- un lien direct vers la release publiée  
+
+Cela permet une traçabilité complète, sans devoir consulter les logs.
+
+---
+
+## 🧭 Pourquoi cette approche ?
+
+Ce système garantit :
+
+- **Intégrité** : aucun document ne peut être modifié sans invalider sa signature  
+- **Reproductibilité** : toute personne peut reconstruire les artefacts à partir des sources  
+- **Transparence** : chaque étape est documentée et vérifiable  
+- **Confiance scientifique** : idéal pour des travaux mathématiques, formels ou théoriques  
+- **Auditabilité** : chaque PDF est lié à un commit, un workflow et une attestation  
+[![SLSA Provenance Verified](https://img.shields.io/badge/SLSA-Provenance%20Verified-4caf50?style=for-the-badge&logo=github)](https://slsa.dev)
+
 # L'Univers est au Carré - Application Web
 
 ## Vue d'ensemble

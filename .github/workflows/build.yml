@@ -130,6 +130,35 @@ jobs:
         new="v-acr-$major.$minor.$patch"
         echo "new=$new" >> $GITHUB_OUTPUT
 
+    # --- RÉSUMÉ DU BUILD ---
+    - name: Generate build summary
+      run: |
+        echo "## 📄 Résumé du build Isabelle + LaTeX" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        echo "### 🧾 PDF générés" >> $GITHUB_STEP_SUMMARY
+        for f in *.pdf; do
+          size=$(stat -c%s "$f")
+          sha=$(sha256sum "$f" | cut -d ' ' -f1)
+          echo "- **$f** — ${size} bytes — \`$sha\`" >> $GITHUB_STEP_SUMMARY
+        done
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        echo "### 🔐 Version générée" >> $GITHUB_STEP_SUMMARY
+        echo "- Version : **${{ steps.version.outputs.new }}**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        echo "### 📝 Message du commit" >> $GITHUB_STEP_SUMMARY
+        echo "> ${{ steps.commit.outputs.message }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        echo "### 🔒 Attestation SLSA" >> $GITHUB_STEP_SUMMARY
+        echo "- Provenance cryptographique générée pour tous les PDF." >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        echo "### 📦 Artefacts" >> $GITHUB_STEP_SUMMARY
+        echo "- Les PDF sont disponibles dans l’onglet *Artifacts*." >> $GITHUB_STEP_SUMMARY
+
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -146,6 +175,7 @@ jobs:
         name: pdfs
 
     - name: Create GitHub Release
+      id: rel
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ needs.build.outputs.new }}
@@ -156,3 +186,16 @@ jobs:
           ${{ needs.build.outputs.message }}
         files: |
           *.pdf
+
+    # --- RÉSUMÉ DU JOB RELEASE ---
+    - name: Release summary
+      run: |
+        echo "## 🚀 Résumé de la release" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- Release créée : **${{ needs.build.outputs.new }}**" >> $GITHUB_STEP_SUMMARY
+        echo "- Lien : ${{ steps.rel.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📄 PDF publiés" >> $GITHUB_STEP_SUMMARY
+        for f in *.pdf; do
+          echo "- $f" >> $GITHUB_STEP_SUMMARY
+        done
