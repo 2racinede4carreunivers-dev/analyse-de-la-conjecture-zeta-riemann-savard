@@ -22,6 +22,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Install minimal TeX Live + pygments
       run: |
@@ -130,12 +132,13 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: pdfs
+        path: .
 
     - name: Create or Update Release
       id: rel
       uses: ncipollo/release-action@v1
       with:
-        tag: latest
+        tag: ${{ needs.build.outputs.new }}
         name: "Release continue — Projet ACR"
         allowUpdates: true
         removeArtifacts: false
@@ -162,7 +165,6 @@ jobs:
 
           ## 🧠 Contexte permanent
           Ce projet vise à formaliser l’unification mathématique « L’univers est au carré ».
-          Les documents publiés ici sont générés automatiquement à partir des sources Isabelle/HOL et LaTeX.
 
           ## 🧩 Notes permanentes
           - Cette release est mise à jour automatiquement à chaque commit manuel.
@@ -173,6 +175,6 @@ jobs:
     - name: Release summary
       run: |
         echo "## 🚀 Release mise à jour" >> $GITHUB_STEP_SUMMARY
-        echo "- Release : latest" >> $GITHUB_STEP_SUMMARY
+        echo "- Release : ${{ needs.build.outputs.new }}" >> $GITHUB_STEP_SUMMARY
         echo "- Version générée : ${{ needs.build.outputs.new }}" >> $GITHUB_STEP_SUMMARY
         echo "- Lien : ${{ steps.rel.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY
