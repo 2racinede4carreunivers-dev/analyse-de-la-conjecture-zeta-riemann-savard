@@ -116,29 +116,6 @@ jobs:
         new="v-acr-$major.$minor.$patch"
         echo "new=$new" >> $GITHUB_OUTPUT
 
-    - name: Generate build summary
-      run: |
-        echo "## 📄 Résumé du build Isabelle + LaTeX" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 🧾 PDF générés" >> $GITHUB_STEP_SUMMARY
-        for f in *.pdf; do
-          size=$(stat -c%s "$f")
-          sha=$(sha256sum "$f" | cut -d ' ' -f1)
-          echo "- **$f** — ${size} bytes — \`$sha\`" >> $GITHUB_STEP_SUMMARY
-        done
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 🔐 Version générée" >> $GITHUB_STEP_SUMMARY
-        echo "- Version : **${{ steps.version.outputs.new }}**" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 📝 Message du commit" >> $GITHUB_STEP_SUMMARY
-        echo "> ${{ steps.commit.outputs.message }}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 🔒 Attestation SLSA" >> $GITHUB_STEP_SUMMARY
-        echo "- Provenance cryptographique générée pour tous les PDF." >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 📦 Artefacts" >> $GITHUB_STEP_SUMMARY
-        echo "- Les PDF sont disponibles dans l’onglet *Artifacts*." >> $GITHUB_STEP_SUMMARY
-
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -154,20 +131,48 @@ jobs:
       with:
         name: pdfs
 
-    - name: Create GitHub Release
+    - name: Create or Update Release
       id: rel
-      uses: softprops/action-gh-release@v2
+      uses: ncipollo/release-action@v1
       with:
-        tag_name: ${{ needs.build.outputs.new }}
-        name: Release ${{ needs.build.outputs.new }}
+        tag: latest
+        name: "Release continue — Projet ACR"
+        allowUpdates: true
+        removeArtifacts: false
+        artifacts: "*.pdf"
+        artifactErrorsFailBuild: true
         body: |
-          ### Notes
-          Commit message:
+          # 📘 Dossier de Release — Projet ACR
+
+          ## 🔢 Version générée
+          ${{ needs.build.outputs.new }}
+
+          ## 📅 Date de génération
+          ${{ github.event.head_commit.timestamp }}
+
+          ## 📝 Message du commit
           ${{ needs.build.outputs.message }}
-        files: |
-          *.pdf
-        make_latest: true
-        overwrite_files: true
+
+          ## 📄 Documents PDF générés
+          Les fichiers PDF suivants ont été générés automatiquement :
+          *(Ils sont attachés à cette release.)*
+
+          ## 🔐 Attestation cryptographique
+          Chaque PDF est accompagné d’une attestation SLSA générée automatiquement.
+
+          ## 🧠 Contexte permanent
+          Ce projet vise à formaliser l’unification mathématique « L’univers est au carré ».
+          Les documents publiés ici sont générés automatiquement à partir des sources Isabelle/HOL et LaTeX.
+
+          ## 🧩 Notes permanentes
+          - Cette release est mise à jour automatiquement à chaque commit manuel.
+          - Aucun commit automatique n’est effectué dans le dépôt.
+          - La structure de cette release est stable et ne change pas.
+          - Les fichiers PDF sont remplacés proprement à chaque génération.
 
     - name: Release summary
       run: |
+        echo "## 🚀 Release mise à jour" >> $GITHUB_STEP_SUMMARY
+        echo "- Release : latest" >> $GITHUB_STEP_SUMMARY
+        echo "- Version générée : ${{ needs.build.outputs.new }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Lien : ${{ steps.rel.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY
