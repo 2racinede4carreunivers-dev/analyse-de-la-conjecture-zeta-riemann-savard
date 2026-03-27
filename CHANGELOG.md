@@ -195,3 +195,45 @@ Ce mécanisme constitue désormais **la procédure standard et définitive** pou
 - Aucun changement n’a été apporté au contenu des fichiers `.thy` ou `.tex`.
 - La compilation Isabelle et LaTeX reste inchangée.
 - Les artefacts PDF continuent d’être générés comme
+## [v-acr-X.Y.Z] — Correction du pipeline de release (fix)
+
+### Type de changement
+**fix** — Correction d’un comportement inattendu dans le workflow GitHub Actions.
+
+### Détails
+- Ajout des `outputs` manquants dans le job `build` afin de permettre au job `release` d’accéder correctement à :
+  - `new` (nouvelle version calculée)
+  - `message` (message du commit)
+- Correction de l’erreur : *“GitHub Releases requires a tag”*
+- Stabilisation du système de versionnement automatique basé sur les préfixes de commit :
+  - `major:` → X.0.0
+  - `feat:` → 0.X.0
+  - `fix:` → 0.0.X
+  - autres → patch par défaut
+- Le workflow génère désormais un tag valide à chaque exécution et publie correctement la release associée.
+- Aucun changement dans la logique de compilation Isabelle/LaTeX ni dans la génération des attestations SLSA.
+
+### Impact
+- Le pipeline CI/CD est maintenant entièrement fonctionnel.
+- Les releases GitHub sont créées automatiquement et sans erreur.
+- Le versionnement est cohérent, reproductible et conforme aux conventions établies.
+
+## [v-acr-X.Y.Z] — Mise à niveau majeure du workflow de release
+
+### 🚀 Améliorations principales
+- Refonte complète du workflow `build-and-attest.yml` pour une génération de release entièrement automatisée et stable.
+- Ajout d’un **modèle fixe de release**, incluant :
+  - résumé du dépôt,
+  - informations d’auteur,
+  - bibliographie mathlib,
+  - sections permanentes et structurées.
+- Intégration d’une **arborescence automatique filtrée** du dépôt (fichiers `.tex`, `.thy`, `.pdf`, guides, README, etc.).
+- Inclusion automatique dans chaque release de **tous les fichiers `.pdf`, `.tex` et `.thy`** générés ou présents dans le dépôt.
+- Amélioration de la transparence scientifique grâce à l’ajout d’une section bibliographique (Lean / mathlib).
+- Stabilisation du versionnement automatique (`major`, `minor`, `patch`) basé sur les messages de commit.
+- Maintien de la certification SLSA et des artefacts cryptographiquement attestés.
+
+### 🛠️ Objectif de cette mise à niveau
+Cette mise à jour majeure établit une structure professionnelle, reproductible et durable pour toutes les releases futures du projet *Analyse de la conjecture de Bernhard Riemann — L’univers est au carré*.  
+Elle garantit une documentation cohérente, une traçabilité complète et une transparence accrue pour les utilisateurs, contributeurs et chercheurs.
+
