@@ -8,7 +8,7 @@ Philippot.
 
 ---
 
-# 1. Longueurs selon la spirale de Théodore
+# 1. Longueurs selon la spirale de Théodore de Cyrène.
 
 ## 1.1 — Principe général
 Les longueurs des côtés de la pyramide suivent la progression :
@@ -17,7 +17,7 @@ Les longueurs des côtés de la pyramide suivent la progression :
 
 Cette loi correspond à la spirale de Théodore de Cyrène.
 
-## 1.2 — Longueurs de référence
+## 1.2 — Longueurs de référence des quatre côtés de la pyramide.
 Quatre longueurs de base sont fournies :
 - L1_ref = 1.65301407  
 - L2_ref = 1.72784193  
@@ -105,7 +105,7 @@ Forme avec correction non linéaire :
 1. Ces trois formes représentent des « nombres hypercomplexes géométriques ».  
 2. Elles combinent aire, rayon et termes non linéaires.  
 3. Elles préfigurent une structure analogue aux quaternions.
-
+« Affirmation  axiomatique uniquement de la validation»
 ---
 
 # 5. Axiomatisation hypercomplexe et spirale
@@ -192,7 +192,7 @@ Il existe une fonction F telle que :
 8. L’utilisateur doit fournir les longueurs et vérifier les équations.  
 9. La méthode est simple, mais exige une interprétation personnelle.  
 10. L’Espace de Philippot est un cadre géométrique hypercomplexe.
-
+11. La présente validation n'est qu'affirmé a partir d'observations qui reste a priori et intuitive a l'heure actuelle.
 ---
 
-# ✔️ Fin du guide d’utilisateur — Espace de Philippot
+# Fin du guide d’utilisateur — Espace de Philippot
