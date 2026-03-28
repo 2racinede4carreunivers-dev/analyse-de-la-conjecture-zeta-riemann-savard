@@ -51,3 +51,14 @@ Un workflows pour le gction semi-automatique pour le carnet note et une attestat
 **Travail à venir :**
 Nouvelle disposition des fichiers et des dossier contenu sur le dépôt.[D[D[
 
+### Test du hook après ajout du script — 2026-03-28 19:40
+
+**Changements apportés :**
+Avant cette mise à jour, le dépôt fonctionnait sans système de carnet de notes, sans automatisation du changelog et sans structure de release évolutive. Les modifications étaient consignées manuellement et de manière non standardisée, ce qui rendait difficile le suivi clair des évolutions du projet.
+
+**Effet immédiat :**
+Le dépôt intègre maintenant un carnet de notes semi‑automatique, un hook pre‑commit fonctionnel, un script de mise à jour du CHANGELOG, ainsi qu’un modèle de release évolutif. Ces ajouts structurent le flux de travail, automatisent la documentation des changements et améliorent la cohérence des mises à jour.
+
+**Travail à venir :**
+Les prochaines mises à jour porteront sur la réorganisation des dossiers et fichiers du dépôt. Une nouvelle disposition sera mise en place afin d’améliorer la compréhension générale, la navigation et le fonctionnement global du projet.
+
