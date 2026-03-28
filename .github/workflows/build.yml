@@ -15,10 +15,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    outputs:
-      new: ${{ steps.version.outputs.new }}
-      message: ${{ steps.commit.outputs.message }}
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -62,11 +58,26 @@ jobs:
           pdflatex -shell-escape -interaction=nonstopmode "$file" || true
         done
 
+    - name: Generate attestation report (SHA-256 des PDF)
+      run: |
+        shopt -s nullglob
+        if ls *.pdf >/dev/null 2>&1; then
+          sha256sum *.pdf > attestation_report.txt
+        else
+          echo "Aucun PDF généré." > attestation_report.txt
+        fi
+
     - name: Upload PDFs
       uses: actions/upload-artifact@v4
       with:
         name: pdfs
         path: "*.pdf"
+
+    - name: Upload attestation report
+      uses: actions/upload-artifact@v4
+      with:
+        name: attestation-report
+        path: attestation_report.txt
 
     - name: Generate build provenance
       uses: actions/attest-build-provenance@v1
@@ -78,55 +89,6 @@ jobs:
       run: |
         msg=$(git log -1 --pretty=%B)
         echo "message=$msg" >> $GITHUB_OUTPUT
-
-    - name: Determine version bump
-      id: bump
-      run: |
-        msg="${{ steps.commit.outputs.message }}"
-        if [[ "$msg" == major:* ]]; then
-          echo "level=major" >> $GITHUB_OUTPUT
-        elif [[ "$msg" == feat:* ]]; then
-          echo "level=minor" >> $GITHUB_OUTPUT
-        elif [[ "$msg" == fix:* ]]; then
-          echo "level=patch" >> $GITHUB_OUTPUT
-        else
-          echo "level=patch" >> $GITHUB_OUTPUT
-        fi
-
-    - name: Get latest tag (robust fallback)
-      id: tag
-      run: |
-        latest=$(git describe --tags --abbrev=0 2>/dev/null || true)
-        if [[ -z "$latest" ]]; then
-          latest="v-acr-0.0.0"
-        fi
-        if [[ ! "$latest" =~ ^v-acr-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-          latest="v-acr-0.0.0"
-        fi
-        echo "latest=$latest" >> $GITHUB_OUTPUT
-
-    - name: Compute next version
-      id: version
-      run: |
-        level="${{ steps.bump.outputs.level }}"
-        latest="${{ steps.tag.outputs.latest }}"
-        base=${latest#v-acr-}
-        IFS='.' read -r major minor patch <<< "$base"
-
-        major=${major:-0}
-        minor=${minor:-0}
-        patch=${patch:-0}
-
-        if [[ "$level" == "major" ]]; then
-          major=$((major+1)); minor=0; patch=0
-        elif [[ "$level" == "minor" ]]; then
-          minor=$((minor+1)); patch=0
-        else
-          patch=$((patch+1))
-        fi
-
-        new="v-acr-$major.$minor.$patch"
-        echo "new=$new" >> $GITHUB_OUTPUT
 
   release:
     needs: build
@@ -144,6 +106,12 @@ jobs:
         name: pdfs
         path: .
 
+    - name: Download attestation report
+      uses: actions/download-artifact@v4
+      with:
+        name: attestation-report
+        path: .
+
     - name: Generate filtered repository structure
       id: structure
       run: |
@@ -158,7 +126,7 @@ jobs:
           -name "algorithme_methodologie.md" -o \
           -name "guide_*.md" \
         \) | sed 's|^\./||' | sort | awk '
-          BEGIN{FS="/"}
+          BEGIN{FS="/" }
           {
             indent = ""
             for(i=1;i<NF;i++) indent = indent "  "
@@ -171,19 +139,21 @@ jobs:
       id: rel
       uses: ncipollo/release-action@v1
       with:
-        tag: ${{ needs.build.outputs.new }}
+        tag: v-unicar-riemann-savard
         name: "Release continue — Projet ACR"
         allowUpdates: true
         removeArtifacts: false
+        replacesArtifacts: true
         artifacts: |
           *.pdf
           *.tex
           *.thy
+          attestation_report.txt
         artifactErrorsFailBuild: true
         body: |
-          # 📘 Dossier de Release — Projet ACR
+          #  Dossier de Release — Projet ACR
 
-          ## 🧭 Résumé du dépôt
+          ##  Résumé du dépôt
 
           Le dépôt **analyse_conjecture_riemann_savard** est un projet scientifique et mathématique personnel développé par son auteur, **Philippe Thomas Savard**. Bien que l’auteur ne soit pas affilié au milieu académique, le dépôt se distingue par une rigueur méthodologique constante et une volonté affirmée d’atteindre l’excellence dans l’analyse et la formalisation mathématique.
 
@@ -199,65 +169,31 @@ jobs:
 
           Les mises à jour successives du dépôt sont consignées dans le fichier **CHANGELOG.md**, mis à jour automatiquement à chaque contribution.
 
-          Le dépôt inclut également le code source d’une application web développée par l’auteur. Cette application intègre trois intelligences artificielles — collaborative, socratique et évolutive — dédiées exclusivement à la théorie « L’univers est au carré ». Ces IA s’appuient sur une banque évolutive de 23 questions-réponses, enrichie progressivement par les interactions des utilisateurs. Elles disposent également de 55 documents de référence, incluant les validations formelles Isabelle/HOL, afin de répondre de manière pertinente aux questions portant sur la théorie.
-
-          ## 👤 Informations sur l’auteur et le dépôt
-
-          - **Nom de l’auteur** : Philippe Thomas Savard  
-          - **Titre du dépôt** : *Analyse de la conjecture de Bernhard Riemann — L’univers est au carré*  
-          - **Adresse courriel** : *PhilippethomasSavard@gmail.com*  
-          - **Licence** : Apache 2.0  
-          - **Lieu** : Lévis, Chaudière‑Appalaches, Canada  
-          - **Date de rédaction** : 27 mars 2026  
-
-          L’auteur invite chaleureusement les lecteurs à consulter les documents PDF portant sur la philosophie qui sous‑tend la théorie unifiée **« L’univers est au carré »**, notamment :
-
-          - *Téléosémantique de l’esprit d’un analogiste* — version originale en français  
-          - *Teleosemantics of the Analogist Mind* — version adaptée en anglais  
-
-          ## 📁 Structure du dépôt (mise à jour automatiquement)
+          ##  Structure du dépôt (mise à jour automatiquement)
 
           ```
           ${{ steps.structure.outputs.tree }}
           ```
 
-          ## 📚 Bibliographie et références formelles
-
-          - **Mathlib (Lean Mathematical Library)**  
-            Dépôt GitHub : https://github.com/leanprover-community/mathlib3.git  
-            Projet collaboratif de formalisation mathématique en Lean, utilisé comme référence pour l’étude formelle de la fonction zêta de Riemann et d’autres théorèmes avancés.
-
-          ---
-
-          ## 🔢 Version générée
-          ${{ needs.build.outputs.new }}
-
-          ## 📅 Date de génération
-          ${{ github.event.head_commit.timestamp }}
-
-          ## 📝 Message du commit
+          ##  Message du commit
           ${{ needs.build.outputs.message }}
 
-          ## 📄 Documents générés et inclus dans la release
+          ##  Documents générés et inclus dans la release
           - Tous les fichiers **PDF**
           - Tous les fichiers **LaTeX (.tex)**
           - Tous les fichiers **Isabelle/HOL (.thy)**
+          - Le fichier **attestation_report.txt** contenant les empreintes SHA-256 des PDF
 
-          ## 🔐 Attestation cryptographique
-          Chaque PDF est accompagné d’une attestation SLSA générée automatiquement.
+          ##  Attestation cryptographique
+          Chaque PDF est accompagné :
+          - d’une attestation SLSA générée automatiquement,
+          - et d’un rapport textuel **attestation_report.txt** listant les empreintes SHA-256 des fichiers PDF.
 
-          ## 🧠 Contexte permanent
+          ##  Contexte permanent
           Ce projet vise à formaliser l’unification mathématique « L’univers est au carré ».
-
-          ## 🧩 Notes permanentes
-          - Cette release est mise à jour automatiquement à chaque commit manuel.
-          - Aucun commit automatique n’est effectué dans le dépôt.
-          - La structure de cette release est stable et ne change pas.
-          - Les fichiers PDF, TEX et THY sont remplacés proprement à chaque génération.
 
     - name: Release summary
       run: |
-        echo "## 🚀 Release mise à jour" >> $GITHUB_STEP_SUMMARY
-        echo "- Release : ${{ needs.build.outputs.new }}" >> $GITHUB_STEP_SUMMARY
-        echo "- Version générée : ${{ needs.build.outputs.new }}" >> $GITHUB_STEP_SUMMARY
+        echo "##  Release mise à jour" >> $GITHUB_STEP_SUMMARY
+        echo "- Tag : v-unicar-riemann-savard" >> $GITHUB_STEP_SUMMARY
         echo "- Lien : ${{ steps.rel.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY
