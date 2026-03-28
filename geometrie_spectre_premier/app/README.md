@@ -1,7 +1,7 @@
 
 [![SLSA Provenance Verified](https://img.shields.io/badge/SLSA-Provenance%20Verified-4caf50?style=for-the-badge&logo=github)](https://slsa.dev)
 
-# 🔐 Provenance cryptographique
+#  Provenance cryptographique
 
 Chaque document PDF généré dans ce dépôt est accompagné d’une **provenance cryptographique vérifiable**, conforme au standard **SLSA (Supply-chain Levels for Software Artifacts)**.  
 Cela garantit que chaque artefact publié :
@@ -15,7 +15,7 @@ Cela garantit que chaque artefact publié :
 
 ---
 
-## 🧬 Chaîne de confiance
+##  Chaîne de confiance
 
 À chaque exécution du pipeline :
 
@@ -30,7 +30,7 @@ Cela garantit que chaque artefact publié :
 
 ---
 
-## 🛡️ Vérification locale des PDF
+##  Vérification locale des PDF
 
 Vous pouvez vérifier l’authenticité de n’importe quel PDF publié avec :
 
@@ -54,7 +54,7 @@ Cela confirme que :
 
 ---
 
-## 📦 Versionnement automatique
+##  Versionnement automatique
 
 Le pipeline applique un versionnement strict basé sur le message du commit :
 
@@ -75,7 +75,7 @@ Chaque release GitHub correspond exactement à une version générée par le pip
 
 ---
 
-## 📄 Transparence des artefacts
+##  Transparence des artefacts
 
 Pour chaque exécution, le workflow génère automatiquement un résumé contenant :
 
@@ -91,7 +91,7 @@ Cela permet une traçabilité complète, sans devoir consulter les logs.
 
 ---
 
-## 🧭 Pourquoi cette approche ?
+##  Pourquoi cette approche ?
 
 Ce système garantit :
 
@@ -231,7 +231,7 @@ tail -f /var/log/supervisor/frontend.*.log
 
 ## État Actuel du Projet
 
-### ✅ Fonctionnalités Complètes
+###  Fonctionnalités Complètes
 - Interface utilisateur complète et responsive
 - IA spécialisée avec mémoire étendue  
 - Upload et analyse de documents
@@ -239,13 +239,13 @@ tail -f /var/log/supervisor/frontend.*.log
 - Base de données avec concepts et tableaux
 - Navigation fluide entre toutes les pages
 
-### 🔧 Dernières Améliorations Apportées
+###  Dernières Améliorations Apportées
 - Restructuration IA en 3 domaines distincts (évite liens forcés)
 - Enrichissement page d'accueil avec deuxième partie
 - Amélioration système d'upload de documents
 - Mode collaboration avec éditeur de texte enrichi
 
-### 🎯 Objectif de l'Application
+###  Objectif de l'Application
 Outil personnel pour Philippe Thomas Savard permettant :
 - Stimuler et augmenter son questionnement sur sa théorie
 - Développer ses argumentations avec l'IA
