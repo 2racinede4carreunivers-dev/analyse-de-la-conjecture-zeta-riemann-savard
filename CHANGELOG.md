@@ -84,3 +84,14 @@ La nouvelle stucture du .yml qui permet grâce a un sytème de fichier mis a jou
 **Travail à venir :**
 Les vérification que ces mises a jours sont fonctionnel sont la principal direction que les effort porté au dépôt seront affecté.
 
+### Release mise a jour — 2026-03-29 16:31
+
+**Changements apportés :**
+
+
+**Effet immédiat :**
+
+
+**Travail à venir :**
+
+
