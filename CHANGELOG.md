@@ -62,3 +62,14 @@ Le dépôt intègre maintenant un carnet de notes semi‑automatique, un hook pr
 **Travail à venir :**
 Les prochaines mises à jour porteront sur la réorganisation des dossiers et fichiers du dépôt. Une nouvelle disposition sera mise en place afin d’améliorer la compréhension générale, la navigation et le fonctionnement global du projet.
 
+### Trigger release — 2026-03-29 09:05
+
+**Changements apportés :**
+LE a version du build.yml a est composé d'une section manquante et doit être apporté pour la restaurer. Des résumés et des information constitues le modèle pré détermineé de la release.
+
+**Effet immédiat :**
+La section manquenate a été restauré et les information mise a jour pour lea release qui est constitué d'un modèle pré déterminé pour celle-ci. Quelques résumé des différents PDF constituant la théorie unifiée et les information sont a jours et prête pour le commit .
+
+**Travail à venir :**
+La disposition des dossiers et fichiers du dépôt l'arborescence sera am�ré bientôt pour ammélioré l'expr�ience lors de l'emplois du dépôt.
+
