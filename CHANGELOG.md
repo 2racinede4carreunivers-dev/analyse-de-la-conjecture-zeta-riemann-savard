@@ -73,3 +73,14 @@ La section manquenate a été restauré et les information mise a jour pour lea 
 **Travail à venir :**
 La disposition des dossiers et fichiers du dépôt l'arborescence sera am�ré bientôt pour ammélioré l'expr�ience lors de l'emplois du dépôt.
 
+### mise a jour de la release automatisé — 2026-03-29 16:17
+
+**Changements apportés :**
+L'ancien workflows permettait le changement de tag et des erreur immuable était ainsi possible? Le github action voulant malgré l'interdiction d'utilisé un nom de tag plus d'une fois provoquait l'erreur?
+
+**Effet immédiat :**
+La nouvelle stucture du .yml qui permet grâce a un sytème de fichier mis a jour note.sh de gérer les tag et le nom de ceux-ci en les détctant automatiquement le bash pose trois question automatique majorx fixy featz pour gérer le nom des tag ainsi programmé par la nouvelle structure qui sert a généré la release évolutive. Le modèle imposé pour les versions mises a jours par le workflows du github action a é��té mis a jour. Une autre mise a jour qui inclut trois question poser du github action dans la release théorie 1,2,3 a été mis en place.
+
+**Travail à venir :**
+Les vérification que ces mises a jours sont fonctionnel sont la principal direction que les effort porté au dépôt seront affecté.
+
