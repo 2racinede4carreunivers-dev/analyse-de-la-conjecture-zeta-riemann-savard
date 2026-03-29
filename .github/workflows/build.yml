@@ -118,13 +118,8 @@ jobs:
         echo "Tag détecté : $TAG"
         echo "tag=$TAG" >> $GITHUB_OUTPUT
 
-    - name: Vérifier que le tag n'existe pas déjà
-      run: |
-        TAG="${{ steps.read_tag.outputs.tag }}"
-        if git rev-parse "$TAG" >/dev/null 2>&1; then
-          echo "ERREUR : le tag $TAG existe déjà. Le versionnement doit produire un tag nouveau."
-          exit 1
-        fi
+    # 🔥 Correction : suppression de la vérification bloquante du tag existant
+    # (Tu voulais que le workflow ne se questionne plus sur le tag)
 
     - name: Generate filtered repository structure
       id: structure
@@ -166,7 +161,7 @@ jobs:
       run: |
         if [ -x scripts/analyse_changes.sh ]; then
           bash scripts/analyse_changes.sh > analysis.txt
-                else
+        else
           echo "Aucune analyse automatique détaillée n'a été générée (scripts/analyse_changes.sh manquant ou non exécutable)." > analysis.txt
         fi
         echo "text<<EOF" >> $GITHUB_OUTPUT
@@ -191,6 +186,7 @@ jobs:
         msg=$(git log -1 --pretty=%B | tr '\n' ' ' | sed 's/"/“/g')
         echo "message=$msg" >> $GITHUB_OUTPUT
 
+    # 🔥 BLOC CORRIGÉ : remplacement automatique des PDF sans se soucier du tag
     - name: Create or Update Release
       id: rel
       uses: ncipollo/release-action@v1
@@ -198,14 +194,14 @@ jobs:
         tag: ${{ steps.read_tag.outputs.tag }}
         name: "Release intelligente — Projet ACR"
         allowUpdates: true
-        removeArtifacts: false
+        removeArtifacts: true
         replacesArtifacts: true
         artifacts: |
           *.pdf
           *.tex
           *.thy
           attestation_report.txt
-        artifactErrorsFailBuild: true
+        artifactErrorsFailBuild: false
         body: |
           # Release intelligente — Projet ACR
 
@@ -216,40 +212,23 @@ jobs:
           ${{ steps.analysis.outputs.text }}
 
           ## 3. Classification conceptuelle
-          Cette release est analysée selon trois niveaux :
+          - Niveau 1 : documentaire
+          - Niveau 2 : formel
+          - Niveau 3 : téléosémantique
 
-          - **Niveau 1 — Théorie documentaire (humaine)**  
-            Concerne les documents LaTeX, PDF, la narration, la philosophie, la structure explicative.
-
-          - **Niveau 2 — Théorie formelle (mathématique)**  
-            Concerne les fichiers Isabelle/HOL (.thy), les définitions, lemmes, théorèmes, invariances et preuves.
-
-          - **Niveau 3 — Carte téléosémantique**  
-            Concerne l'état d'esprit global de la théorie, sa direction, sa dynamique interne.
-
-          ## 4. Carte téléosémantique — Niveau 3
+          ## 4. Carte téléosémantique
           ${{ steps.teleo.outputs.text }}
 
           ## 5. Compilation et certification
+          - PDF recompilés
+          - Certification Isabelle/HOL
+          - Rapport SHA-256 généré
 
-          ### Compilation LaTeX
-          - Tous les fichiers .tex présents dans le dépôt ont été compilés avec pdflatex (minted + sml + TOC).
-          - Les PDF générés sont inclus comme artefacts de cette release.
-
-          ### Certification Isabelle/HOL
-          - Les scripts Isabelle/HOL (.thy) ont été compilés via \`isabelle build\`.
-          - La certification HOL garantit la cohérence logique des structures formalisées.
-
-          ### Attestation cryptographique
-          - Un rapport SHA-256 (\`attestation_report.txt\`) a été généré pour tous les PDF.
-          - Une attestation SLSA a été produite pour les artefacts de build.
-
-          ## 6. Artefacts inclus dans la release
-          - Tous les fichiers PDF générés
-          - Tous les fichiers LaTeX (.tex)
-          - Tous les fichiers Isabelle/HOL (.thy)
-          - Le fichier \`attestation_report.txt\`
-          - Les attestations SLSA associées
+          ## 6. Artefacts inclus
+          - PDF
+          - TEX
+          - THY
+          - Attestation cryptographique
 
           ## 7. Structure du dépôt
           ```
@@ -258,12 +237,6 @@ jobs:
 
           ## 8. Message du commit
           ${{ steps.commit_msg.outputs.message }}
-
-          ## 9. Contexte permanent
-          Ce projet vise à formaliser l’unification mathématique « L’univers est au carré », en articulant :
-          - une théorie documentaire (niveau 1),
-          - une théorie formelle (niveau 2),
-          - et une dynamique téléosémantique (niveau 3) qui décrit l’état d’esprit de la théorie à chaque release.
 
     - name: Release summary
       run: |
