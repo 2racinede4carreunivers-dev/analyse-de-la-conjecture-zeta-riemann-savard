@@ -139,7 +139,7 @@ jobs:
       id: rel
       uses: ncipollo/release-action@v1
       with:
-        tag: v-unicar-riemann-savard
+        tag: v1.0.0
         name: "Release continue — Projet ACR"
         allowUpdates: true
         removeArtifacts: false
@@ -152,22 +152,6 @@ jobs:
         artifactErrorsFailBuild: true
         body: |
           #  Dossier de Release — Projet ACR
-
-          ##  Résumé du dépôt
-
-          Le dépôt **analyse_conjecture_riemann_savard** est un projet scientifique et mathématique personnel développé par son auteur, **Philippe Thomas Savard**. Bien que l’auteur ne soit pas affilié au milieu académique, le dépôt se distingue par une rigueur méthodologique constante et une volonté affirmée d’atteindre l’excellence dans l’analyse et la formalisation mathématique.
-
-          L’un des chapitres centraux du dépôt porte sur l’étude de l’énigme de Bernhard Riemann et de sa célèbre conjecture concernant la fonction zêta. Ce sujet ambitieux est abordé à travers des documents explicatifs détaillant les méthodes originales employées par l’auteur pour explorer et tenter de résoudre cette problématique historique.
-
-          Deux validations formelles, entièrement codées en Isabelle/HOL, sont disponibles dans le dépôt. Elles peuvent être consultées, modifiées, partagées ou enrichies conformément aux permissions définies dans la licence du projet. Plusieurs documents PDF accompagnent ces validations formelles et sont générés automatiquement par le workflow GitHub Actions, incluant leurs attestations cryptographiques. Le rapport de certification produit lors de chaque exécution du workflow est également fourni et accessible aux utilisateurs et contributeurs.
-
-          Le dépôt comprend également d’autres chapitres qui s’inscrivent dans une perspective plus large d’unification mathématique, en lien avec la théorie personnelle de l’auteur intitulée **« L’univers est au carré »**. Les différents volets de cette théorie sont présentés et documentés dans les sections correspondantes du dépôt.
-
-          Un fichier **README.md**, situé à la racine du dépôt, présente les informations essentielles concernant l’utilisation du projet, ses règles, son fonctionnement et ses objectifs. L’auteur invite les utilisateurs à le consulter pour toute question relative au dépôt.
-
-          Pour accompagner les validations formelles, plusieurs fichiers de référence sont fournis. Ils expliquent la méthodologie employée, les procédures de reproduction des résultats et les principes théoriques sous-jacents. Un fichier supplémentaire sert de guide méthodologique complet pour les résultats avancés présentés dans les scripts Isabelle/HOL.
-
-          Les mises à jour successives du dépôt sont consignées dans le fichier **CHANGELOG.md**, mis à jour automatiquement à chaque contribution.
 
           ##  Structure du dépôt (mise à jour automatiquement)
 
@@ -182,18 +166,10 @@ jobs:
           - Tous les fichiers **PDF**
           - Tous les fichiers **LaTeX (.tex)**
           - Tous les fichiers **Isabelle/HOL (.thy)**
-          - Le fichier **attestation_report.txt** contenant les empreintes SHA-256 des PDF
-
-          ##  Attestation cryptographique
-          Chaque PDF est accompagné :
-          - d’une attestation SLSA générée automatiquement,
-          - et d’un rapport textuel **attestation_report.txt** listant les empreintes SHA-256 des fichiers PDF.
-
-          ##  Contexte permanent
-          Ce projet vise à formaliser l’unification mathématique « L’univers est au carré ».
+          - Le fichier **attestation_report.txt**
 
     - name: Release summary
       run: |
         echo "##  Release mise à jour" >> $GITHUB_STEP_SUMMARY
-        echo "- Tag : v-unicar-riemann-savard" >> $GITHUB_STEP_SUMMARY
+        echo "- Tag : v1.0.0" >> $GITHUB_STEP_SUMMARY
         echo "- Lien : ${{ steps.rel.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY
