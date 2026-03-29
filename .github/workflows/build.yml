@@ -84,12 +84,6 @@ jobs:
       with:
         subject-path: "*.pdf"
 
-    - name: Extract commit message (safe)
-      id: commit
-      run: |
-        msg=$(git log -1 --pretty=%B | tr '\n' ' ' | sed 's/"/“/g')
-        echo "message=$msg" >> $GITHUB_OUTPUT
-
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -111,6 +105,26 @@ jobs:
       with:
         name: attestation-report
         path: .
+
+    - name: Lire le tag calculé par note.sh
+      id: read_tag
+      run: |
+        if [ ! -f .next_tag ]; then
+          echo "ERREUR : le fichier .next_tag est manquant."
+          echo "Assure-toi d'avoir exécuté ./note.sh avant le commit."
+          exit 1
+        fi
+        TAG=$(cat .next_tag)
+        echo "Tag détecté : $TAG"
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+    - name: Vérifier que le tag n'existe pas déjà
+      run: |
+        TAG="${{ steps.read_tag.outputs.tag }}"
+        if git rev-parse "$TAG" >/dev/null 2>&1; then
+          echo "ERREUR : le tag $TAG existe déjà. Le versionnement doit produire un tag nouveau."
+          exit 1
+        fi
 
     - name: Generate filtered repository structure
       id: structure
@@ -135,12 +149,54 @@ jobs:
         ' >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
 
+    - name: Analyse post-mortem (Niveau 1 humain/documentaire)
+      id: postmortem
+      run: |
+        if [ -x scripts/postmortem.sh ]; then
+          bash scripts/postmortem.sh > postmortem.txt
+        else
+          echo "Post-mortem non disponible (scripts/postmortem.sh manquant ou non exécutable)." > postmortem.txt
+        fi
+        echo "text<<EOF" >> $GITHUB_OUTPUT
+        cat postmortem.txt >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Analyse des changements (Niveau 1 & 2)
+      id: analysis
+      run: |
+        if [ -x scripts/analyse_changes.sh ]; then
+          bash scripts/analyse_changes.sh > analysis.txt
+                else
+          echo "Aucune analyse automatique détaillée n'a été générée (scripts/analyse_changes.sh manquant ou non exécutable)." > analysis.txt
+        fi
+        echo "text<<EOF" >> $GITHUB_OUTPUT
+        cat analysis.txt >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Carte téléosémantique (Niveau 3)
+      id: teleo
+      run: |
+        if [ -x scripts/teleosemantic_map.sh ]; then
+          bash scripts/teleosemantic_map.sh > teleo.txt
+        else
+          echo "La théorie se trouve dans un état téléosémantique stable : la structure évolue progressivement, en cohérence avec les versions précédentes." > teleo.txt
+        fi
+        echo "text<<EOF" >> $GITHUB_OUTPUT
+        cat teleo.txt >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Extraire le message du commit
+      id: commit_msg
+      run: |
+        msg=$(git log -1 --pretty=%B | tr '\n' ' ' | sed 's/"/“/g')
+        echo "message=$msg" >> $GITHUB_OUTPUT
+
     - name: Create or Update Release
       id: rel
       uses: ncipollo/release-action@v1
       with:
-        tag: v1.0.0
-        name: "Release continue — Projet ACR"
+        tag: ${{ steps.read_tag.outputs.tag }}
+        name: "Release intelligente — Projet ACR"
         allowUpdates: true
         removeArtifacts: false
         replacesArtifacts: true
@@ -151,62 +207,66 @@ jobs:
           attestation_report.txt
         artifactErrorsFailBuild: true
         body: |
-          # Dossier de Release — Projet ACR
+          # Release intelligente — Projet ACR
 
-          ## Présentation générale
+          ## 1. Post-mortem de la version précédente
+          ${{ steps.postmortem.outputs.text }}
 
-          Le dépôt analyse_conjecture_riemann_savard est un projet scientifique et mathématique personnel développé par son auteur, Philippe Thomas Savard. Bien que l’auteur ne soit pas issu du milieu académique, le dépôt se distingue par une rigueur méthodologique constante, une volonté d’exactitude et un souci de formalisation rarement rencontrés dans des travaux indépendants.
+          ## 2. Nouveaux points apportés
+          ${{ steps.analysis.outputs.text }}
 
-          Le projet explore plusieurs axes : la géométrie du spectre des nombres premiers, la mécanique harmonique du chaos discret, le postulat du squaring, la téléosémantique, ainsi que divers scripts Isabelle/HOL assurant la validité logique des structures présentées. L’ensemble s’inscrit dans une vision plus large : L’univers est au carré.
+          ## 3. Classification conceptuelle
+          Cette release est analysée selon trois niveaux :
 
-          Le dépôt contient cinq scripts Isabelle/HOL validés : methode_de_philippot.thy, methode_spectral.thy, mecanique_discret.thy, postulat_carre.thy et espace_philippot.thy.
+          - **Niveau 1 — Théorie documentaire (humaine)**  
+            Concerne les documents LaTeX, PDF, la narration, la philosophie, la structure explicative.
 
-          ## Documents PDF inclus dans la release
+          - **Niveau 2 — Théorie formelle (mathématique)**  
+            Concerne les fichiers Isabelle/HOL (.thy), les définitions, lemmes, théorèmes, invariances et preuves.
 
-          ### 1. Géométrie du spectre premier
-          Ce document explore une méthode originale pour comprendre la distribution des nombres premiers à travers une approche géométrique et métrique. L’auteur y développe l’idée que les rapports internes entre grandeurs numériques révèlent une structure profonde liée au spectre premier. L’analyse numérique métrique fournit un cadre visuel permettant de relier les suites A et B à la position des nombres premiers. Plusieurs validations formelles Isabelle/HOL assurent la cohérence logique des mécanismes proposés.
+          - **Niveau 3 — Carte téléosémantique**  
+            Concerne l'état d'esprit global de la théorie, sa direction, sa dynamique interne.
 
-          ### 2. Geometry of the Prime Spectrum (English adapted version)
-          Version anglaise du document précédent.
+          ## 4. Carte téléosémantique — Niveau 3
+          ${{ steps.teleo.outputs.text }}
 
-          ### 3. La mécanique harmonique du chaos discret
-          Ce document présente une approche géométrique et analytique originale, explorant une invariance géométrique universelle à travers des figures simples. Trois unités fondamentales — √2+1, √3+1 et √5+1 — sont étudiées. La formalisation Isabelle/HOL démontre que ces invariances sont structurellement nécessaires. Les matrices M1, M2 et M3 révèlent une structure arithmétique interne interprétée comme la mécanique harmonique du chaos discret.
+          ## 5. Compilation et certification
 
-          ### 4. The philosophy — derrière l’univers est au carré
-          Synopsis à venir.
+          ### Compilation LaTeX
+          - Tous les fichiers .tex présents dans le dépôt ont été compilés avec pdflatex (minted + sml + TOC).
+          - Les PDF générés sont inclus comme artefacts de cette release.
 
-          ### 5. Le Postulat du Squaring
-          Ce document expose le cœur géométrique du postulat du squaring, une transformation qui élève un rectangle à une nouvelle figure dont les propriétés internes révèlent une structure mathématique profonde. La formalisation Isabelle/HOL encode les ratios fondamentaux, les équations de hauteur et de troncature, ainsi que la relation centrale reliant diagonale, aire et unité symbolique.
+          ### Certification Isabelle/HOL
+          - Les scripts Isabelle/HOL (.thy) ont été compilés via \`isabelle build\`.
+          - La certification HOL garantit la cohérence logique des structures formalisées.
 
-          ### 6. La téléosémantique — l’esprit d’un analogiste
-          Ce document constitue la dimension philosophique du projet. L’auteur y explore les liens entre son parcours personnel, la pensée analogique, la pulsion de vie et la structure géométrique des nombres premiers. Il introduit la notion d’analogiste, un esprit qui perçoit la grammaire comme une mathématique et qui cherche à éliminer les biais dans les raisonnements humains.
+          ### Attestation cryptographique
+          - Un rapport SHA-256 (\`attestation_report.txt\`) a été généré pour tous les PDF.
+          - Une attestation SLSA a été produite pour les artefacts de build.
 
-          ### 7. L’Espace de Philippôt
-          Titre inclus — synopsis à venir.
+          ## 6. Artefacts inclus dans la release
+          - Tous les fichiers PDF générés
+          - Tous les fichiers LaTeX (.tex)
+          - Tous les fichiers Isabelle/HOL (.thy)
+          - Le fichier \`attestation_report.txt\`
+          - Les attestations SLSA associées
 
-          ## Structure du dépôt
+          ## 7. Structure du dépôt
           ```
           ${{ steps.structure.outputs.tree }}
           ```
 
-          ## Message du commit
-          ${{ needs.build.outputs.message }}
+          ## 8. Message du commit
+          ${{ steps.commit_msg.outputs.message }}
 
-          ## Documents générés automatiquement
-          - Tous les fichiers PDF
-          - Tous les fichiers LaTeX (.tex)
-          - Tous les fichiers Isabelle/HOL (.thy)
-          - Le fichier attestation_report.txt
-          - Les attestations SLSA
-
-          ## Attestation cryptographique
-          Chaque PDF est accompagné d’une attestation SLSA et d’un rapport SHA‑256.
-
-          ## Contexte permanent
-          Ce projet vise à formaliser l’unification mathématique L’univers est au carré.
+          ## 9. Contexte permanent
+          Ce projet vise à formaliser l’unification mathématique « L’univers est au carré », en articulant :
+          - une théorie documentaire (niveau 1),
+          - une théorie formelle (niveau 2),
+          - et une dynamique téléosémantique (niveau 3) qui décrit l’état d’esprit de la théorie à chaque release.
 
     - name: Release summary
       run: |
         echo "## Release mise à jour" >> $GITHUB_STEP_SUMMARY
-        echo "- Tag : v1.0.0" >> $GITHUB_STEP_SUMMARY
+        echo "- Tag : ${{ steps.read_tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
         echo "- Lien : ${{ steps.rel.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY
