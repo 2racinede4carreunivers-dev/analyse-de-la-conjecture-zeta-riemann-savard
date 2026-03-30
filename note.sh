@@ -20,6 +20,12 @@ echo "q3=\"$Q3\"" >> "$NOTE_FILE"
 
 echo ""
 echo "=== Gestion du versionnement du TAG ==="
+echo ""
+
+# Demande des règles de versionnement
+read -p "Règle MAJOR (ex: 2/1, 10/1, vide pour conserver) : " MAJOR
+read -p "Règle FIX   (ex: 1/2, 3/1, vide pour conserver) : " FIX
+read -p "Règle FEAT  (ex: 1/1, 5/1, vide pour conserver) : " FEAT
 
 # Récupération du tag actuel
 CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v-0.0.0")
