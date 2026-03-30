@@ -128,3 +128,14 @@ Le note.sh a tété mis a niveau afin de retirer les six questions concernant la
 **Travail à venir :**
 Le nécéssaire sera mis en oeuvres pour que le dépôt concernant la release soit a niveau avec ce que représente le dépôt pour l'auteur et le nécessaire pour que le dépôt soit le plus agréable a utiliser par l'utilisateur dfutur et reste une prioroité pour l'auteur Philippe Thomas Savard.
 
+### Mise a jour major de la release. — 2026-03-30 11:29
+
+**Changements apportés :**
+Quels changements avez-vous apportés ? La release avait le désire de joindre les artefacts des pdf généré compilés attestés et cerifiés dans la release evolutive généré?  Le note.sh pose 12 questions qui sont joint au carnet de mises a jours 3 pour celui-ci, 3 pour la définissions des tag de la release et six autres qui servent a numéroté les version des pdf qui sont lié comme artefacts a la release evolutive du dépôt généré a chaque poussé du commit?
+
+**Effet immédiat :**
+Quel est l'effet immédiat sur le dépôt ? Le note.sh a été mis a niveau afin de retirer les six questions concernant la numérotation des versions qui devaient être joint a la release généré par le workflows du github actions? Le build.yml est également mis a jour pour maintenant plus joindre l'artefacts des pdf a la release évolutive généré? La mise ajour poussé par le commit conduit le workflows sur le github actions de généré désormait une release n'incluant pas les artefacts des pdf. La release reste evolutive elle conitent en elle les résumé des pdf selon les mise a jours effectué a ceux-ci grâce a l'analyse de ceux-ci par le github actions lors de la certification et la compilation. Le workflows génère toujours une certificationet une attestation lors de la compilation a partir de TexLive instaler par github action. Les fichiers HOL d'isabelle .thy rest certifié lors des compliations réussi le fichier de certification de compilation est disponible sur dans le rapport fournit par le workflows sur le dépôt? La release présente les résumés def pdf les point marquants du dépôt ainsi que trois commentaire qui sont répondu par le github actions lors de l'analyse durant la compilation? Ces commentaire sont la réponses généré a trois question inlcut dans le buid.yml disponible sur le dépôt.
+
+**Travail à venir :**
+Quelle mise à jour prévoyez-vous ensuite ? Le nécéssaire sera mis en oeuvres pour que le dépôt concernant la release soit a niveau avec ce que représente le dépôt pour l'auteur et le nécessaire pour que le épôt soit le plus agréable a utiliser par l'utilisateur dans lefutur et reste une prioroité pour l'auteur Philippe Thomas Savard.
+
