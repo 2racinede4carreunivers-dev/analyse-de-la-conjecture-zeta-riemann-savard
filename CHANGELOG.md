@@ -95,3 +95,14 @@ Les vérification que ces mises a jours sont fonctionnel sont la principal direc
 **Travail à venir :**
 
 
+### Mise a jour de la release — 2026-03-29 20:16
+
+**Changements apportés :**
+la version précédente contenait une possibili�t�ée pour la release de trois question posé sur la release. Post-mortem, nouveau x points apportés et classification conceptuelle.
+
+**Effet immédiat :**
+La release est temporairement tronqué des fonction précédente pour mise a niveau temporaire qui nécéssite vvalidation par une poussée d'un commit.
+
+**Travail à venir :**
+Retour a la fonction des trois questions qui ont été tronqué temporairement de ce commit poussé pour validation.
+
