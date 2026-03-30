@@ -263,3 +263,8 @@ jobs:
         allowUpdates: true
         replacesArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Publier l’attestation SLSA
+      uses: actions/attest-build-provenance@v1
+      with:
+        subject-path: "artifacts/**/*.pdf"
