@@ -106,3 +106,14 @@ La release est temporairement tronqué des fonction précédente pour mise a niv
 **Travail à venir :**
 Retour a la fonction des trois questions qui ont été tronqué temporairement de ce commit poussé pour validation.
 
+### Validation test — 2026-03-30 08:24
+
+**Changements apportés :**
+La release n'inclut pas les pdf a son contenu lors du build du workflows effectué� sur le github actions? Le fichier note.sh n'étant pas configuré adéquatement pour le faire. La release annonce une séries de «warning» démontrant se trait de construction de la release malgré son succès des suite du build du workflow.
+
+**Effet immédiat :**
+Le fichier note.sh a été mis a jour. Six nouvelle question sont maintenant posés par le bash lors des commit dirigé vers le dépôt? Ces six questions ont pour but la numérotation précise de chaet attestés par le build du github actions. La mise a niveau pour le note.sh pose maintenant une série complète de 12 questions a répondres 3 pour le carnet de mises a jour. Les trois question major,fix,feat pour le tag de la release et la question alpha beta zeta pour chaque pdf incluent dans la nouvelle version evolué des release pouss�és par commit vers le dépôt.
+
+**Travail à venir :**
+Les vérification adéquate et de mise pour complété le workflows pour le github actions du dépôt seront effectué pour aasuré que ce point est complété et a jour pour le futur du dépôt et son bon fonctionnement.
+
