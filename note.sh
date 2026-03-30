@@ -29,42 +29,60 @@ echo "Tag actuel détecté : $CURRENT_TAG"
 TAG_NUM="${CURRENT_TAG#v-}"
 IFS='.' read -r X Y Z <<< "$TAG_NUM"
 
-# Règles de mise à jour du tag
-read -p "4. Nouvelle valeur pour major (ex: 4/3major ou vide) : " MAJOR
-read -p "5. Nouvelle valeur pour fix   (ex: 1/0fix   ou vide) : " FIX
-read -p "6. Nouvelle valeur pour feat  (ex: 6/5feat  ou vide) : " FEAT
+# Fonction de normalisation : 0 = 1 pour les calculs
+normalize_zero() {
+    [[ "$1" -eq 0 ]] && echo 1 || echo "$1"
+}
 
+# Fonction de finalisation : 10 = 0 dans le résultat final
+finalize_value() {
+    [[ "$1" -eq 10 ]] && echo 0 || echo "$1"
+}
+
+# Fonction d'application des règles
 apply_rule() {
     local old="$1"
     local rule="$2"
 
+    # Si règle vide → conserver l'ancienne valeur
     [[ -z "$rule" ]] && echo "$old" && return
 
+    # Nettoyage du suffixe major/fix/feat
     rule="${rule//major/}"
     rule="${rule//fix/}"
     rule="${rule//feat/}"
 
-    if [[ "$rule" == */0 ]]; then
-        num="${rule%/*}"
-        if [[ "$num" == "10" ]]; then
-            echo 0
-        else
-            echo "$num"
-        fi
-        return
-    fi
-
+    # Extraction a/b
     if [[ "$rule" == */* ]]; then
-        num="${rule%/*}"
-        den="${rule#*/}"
-        result=$(echo "$old * $num / $den" | bc -l)
-        echo "${result%.*}"
+        a="${rule%/*}"
+        b="${rule#*/}"
+
+        # b=0 → b=1
+        [[ "$b" -eq 0 ]] && b=1
+
+        # a=10 → résultat final = 0
+        if [[ "$a" -eq 10 ]]; then
+            echo 0
+            return
+        fi
+
+        # Normalisation de l'ancienne valeur (0=1)
+        old_norm=$(normalize_zero "$old")
+
+        # Calcul
+        result=$(echo "$old_norm * $a / $b" | bc -l)
+        result_int="${result%.*}"
+
+        # Finalisation (10=0)
+        finalize_value "$result_int"
         return
     fi
 
+    # Si la règle n'est pas valide → conserver l'ancienne valeur
     echo "$old"
 }
 
+# Calcul des nouvelles valeurs
 NEW_X=$(apply_rule "$X" "$MAJOR")
 NEW_Y=$(apply_rule "$Y" "$FIX")
 NEW_Z=$(apply_rule "$Z" "$FEAT")
