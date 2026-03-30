@@ -67,6 +67,19 @@ jobs:
           echo "Aucun PDF généré." > attestation_report.txt
         fi
 
+    - name: Generate build metadata
+      run: |
+        echo "Build provenance" > build_metadata.txt
+        echo "Commit SHA : $(git rev-parse HEAD)" >> build_metadata.txt
+        echo "Branche : $(git rev-parse --abbrev-ref HEAD)" >> build_metadata.txt
+        echo "Date : $(date -u)" >> build_metadata.txt
+        echo "" >> build_metadata.txt
+        echo "PDF générés :" >> build_metadata.txt
+        ls *.pdf >> build_metadata.txt
+        echo "" >> build_metadata.txt
+        echo "SHA-256 des PDF :" >> build_metadata.txt
+        sha256sum *.pdf >> build_metadata.txt
+
     - name: Upload PDFs
       uses: actions/upload-artifact@v4
       with:
@@ -78,6 +91,12 @@ jobs:
       with:
         name: attestation-report
         path: attestation_report.txt
+
+    - name: Upload build metadata
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-metadata
+        path: build_metadata.txt
 
     - name: Generate build provenance
       uses: actions/attest-build-provenance@v1
@@ -106,20 +125,23 @@ jobs:
         name: attestation-report
         path: .
 
-    - name: Lire le tag calculé par note.sh
+    - name: Download build metadata
+      uses: actions/download-artifact@v4
+      with:
+        name: build-metadata
+        path: .
+
+    - name: Lire le tag généré par note.sh
       id: read_tag
       run: |
         if [ ! -f .next_tag ]; then
           echo "ERREUR : le fichier .next_tag est manquant."
-          echo "Assure-toi d'avoir exécuté ./note.sh avant le commit."
+          echo "Exécute ./note.sh AVANT le commit."
           exit 1
         fi
         TAG=$(cat .next_tag)
         echo "Tag détecté : $TAG"
         echo "tag=$TAG" >> $GITHUB_OUTPUT
-
-    # 🔥 Correction : suppression de la vérification bloquante du tag existant
-    # (Tu voulais que le workflow ne se questionne plus sur le tag)
 
     - name: Generate filtered repository structure
       id: structure
@@ -144,49 +166,12 @@ jobs:
         ' >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
 
-    - name: Analyse post-mortem (Niveau 1 humain/documentaire)
-      id: postmortem
-      run: |
-        if [ -x scripts/postmortem.sh ]; then
-          bash scripts/postmortem.sh > postmortem.txt
-        else
-          echo "Post-mortem non disponible (scripts/postmortem.sh manquant ou non exécutable)." > postmortem.txt
-        fi
-        echo "text<<EOF" >> $GITHUB_OUTPUT
-        cat postmortem.txt >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-
-    - name: Analyse des changements (Niveau 1 & 2)
-      id: analysis
-      run: |
-        if [ -x scripts/analyse_changes.sh ]; then
-          bash scripts/analyse_changes.sh > analysis.txt
-        else
-          echo "Aucune analyse automatique détaillée n'a été générée (scripts/analyse_changes.sh manquant ou non exécutable)." > analysis.txt
-        fi
-        echo "text<<EOF" >> $GITHUB_OUTPUT
-        cat analysis.txt >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-
-    - name: Carte téléosémantique (Niveau 3)
-      id: teleo
-      run: |
-        if [ -x scripts/teleosemantic_map.sh ]; then
-          bash scripts/teleosemantic_map.sh > teleo.txt
-        else
-          echo "La théorie se trouve dans un état téléosémantique stable : la structure évolue progressivement, en cohérence avec les versions précédentes." > teleo.txt
-        fi
-        echo "text<<EOF" >> $GITHUB_OUTPUT
-        cat teleo.txt >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-
     - name: Extraire le message du commit
       id: commit_msg
       run: |
         msg=$(git log -1 --pretty=%B | tr '\n' ' ' | sed 's/"/“/g')
         echo "message=$msg" >> $GITHUB_OUTPUT
 
-    # 🔥 BLOC CORRIGÉ : remplacement automatique des PDF sans se soucier du tag
     - name: Create or Update Release
       id: rel
       uses: ncipollo/release-action@v1
@@ -201,42 +186,68 @@ jobs:
           *.tex
           *.thy
           attestation_report.txt
+          build_metadata.txt
         artifactErrorsFailBuild: false
-        body: |
-          # Release intelligente — Projet ACR
+        body: |  # Release intelligente — Projet ACR
 
-          ## 1. Post-mortem de la version précédente
-          ${{ steps.postmortem.outputs.text }}
+          ## Présentation générale
 
-          ## 2. Nouveaux points apportés
-          ${{ steps.analysis.outputs.text }}
+          Le dépôt *analyse_conjecture_riemann_savard* est un projet scientifique et mathématique personnel développé par son auteur, Philippe Thomas Savard. Bien que l’auteur ne soit pas issu du milieu académique, le dépôt se distingue par une rigueur méthodologique constante, une volonté d’exactitude et un souci de formalisation rarement rencontrés dans des travaux indépendants.
 
-          ## 3. Classification conceptuelle
-          - Niveau 1 : documentaire
-          - Niveau 2 : formel
-          - Niveau 3 : téléosémantique
+          Le projet explore plusieurs axes : la géométrie du spectre des nombres premiers, la mécanique harmonique du chaos discret, le postulat du squaring, la téléosémantique, ainsi que divers scripts Isabelle/HOL assurant la validité logique des structures présentées. L’ensemble s’inscrit dans une vision plus large : *L’univers est au carré*.
 
-          ## 4. Carte téléosémantique
-          ${{ steps.teleo.outputs.text }}
+          Le dépôt contient cinq scripts Isabelle/HOL validés :
+          - methode_de_philippot.thy  
+          - methode_spectral.thy  
+          - mecanique_discret.thy  
+          - postulat_carre.thy  
+          - espace_philippot.thy  
 
-          ## 5. Compilation et certification
-          - PDF recompilés
-          - Certification Isabelle/HOL
-          - Rapport SHA-256 généré
+          ## Documents PDF inclus dans la release
 
-          ## 6. Artefacts inclus
-          - PDF
-          - TEX
-          - THY
-          - Attestation cryptographique
+          ### 1. Géométrie du spectre premier
+          Ce document explore une méthode originale pour comprendre la distribution des nombres premiers à travers une approche géométrique et métrique. L’auteur y développe l’idée que les rapports internes entre grandeurs numériques révèlent une structure profonde liée au spectre premier.
 
-          ## 7. Structure du dépôt
+          ### 2. Geometry of the Prime Spectrum (English adapted version)
+          Version anglaise du document précédent.
+
+          ### 3. La mécanique harmonique du chaos discret
+          Ce document présente une approche géométrique et analytique originale, explorant une invariance géométrique universelle à travers des figures simples. Trois unités fondamentales — √2+1, √3+1 et √5+1 — sont étudiées. La formalisation Isabelle/HOL démontre que ces invariances sont structurellement nécessaires.
+
+          ### 4. The philosophy — derrière l’univers est au carré
+          Synopsis à venir.
+
+          ### 5. Le Postulat du Squaring
+          Ce document expose le cœur géométrique du postulat du squaring, une transformation qui élève un rectangle à une nouvelle figure dont les propriétés internes révèlent une structure mathématique profonde.
+
+          ### 6. La téléosémantique — l’esprit d’un analogiste
+          Ce document constitue la dimension philosophique du projet. L’auteur y explore les liens entre son parcours personnel, la pensée analogique, la pulsion de vie et la structure géométrique des nombres premiers.
+
+          ### 7. L’Espace de Philippôt
+          Titre inclus — synopsis à venir.
+
+          ## Structure du dépôt
           ```
           ${{ steps.structure.outputs.tree }}
           ```
 
-          ## 8. Message du commit
+          ## Message du commit
           ${{ steps.commit_msg.outputs.message }}
+
+          ## Documents générés automatiquement
+          - Tous les fichiers PDF  
+          - Tous les fichiers LaTeX (.tex)  
+          - Tous les fichiers Isabelle/HOL (.thy)  
+          - Le fichier attestation_report.txt  
+          - Les métadonnées du build  
+          - Les attestations SLSA
+
+          ## Attestation cryptographique
+          Chaque PDF est accompagné d’une attestation SLSA et d’un rapport SHA‑256.
+
+          ## Contexte permanent
+          Ce projet vise à formaliser l’unification mathématique *L’univers est au carré*.
+
 
     - name: Release summary
       run: |
