@@ -247,3 +247,5 @@ jobs:
         echo "## Release mise à jour" >> $GITHUB_STEP_SUMMARY
         echo "- Tag : ${{ steps.read_tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
         echo "- Lien : ${{ steps.rel.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY
+
+        
