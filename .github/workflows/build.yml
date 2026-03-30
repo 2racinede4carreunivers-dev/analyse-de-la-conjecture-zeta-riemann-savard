@@ -247,5 +247,19 @@ jobs:
         echo "## Release mise à jour" >> $GITHUB_STEP_SUMMARY
         echo "- Tag : ${{ steps.read_tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
         echo "- Lien : ${{ steps.rel.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY
-
         
+    - name: Télécharger tous les artefacts pour la release
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Mettre à jour la release avec les artefacts
+      uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ steps.read_tag.outputs.tag }}
+        name: ${{ steps.read_tag.outputs.tag }}
+        body: ${{ steps.rel_body.outputs.body }}
+        artifacts: "artifacts/**/*"
+        allowUpdates: true
+        replacesArtifacts: true
+        token: ${{ secrets.GITHUB_TOKEN }}
