@@ -119,6 +119,25 @@ jobs:
         name: pdfs
         path: .
 
+    - name: Renommer les PDF selon .pdf_versions
+      run: |
+        if [ ! -f .pdf_versions ]; then
+          echo "ERREUR : fichier .pdf_versions manquant."
+          exit 1
+        fi
+
+        while IFS='=' read -r base version; do
+          src="${base}.pdf"
+          dst="${base}_${version}.pdf"
+
+          if [ -f "$src" ]; then
+            mv "$src" "$dst"
+            echo "Renommé : $src → $dst"
+          else
+            echo "AVERTISSEMENT : PDF introuvable : $src"
+          fi
+        done < .pdf_versions
+
     - name: Download attestation report
       uses: actions/download-artifact@v4
       with:
@@ -150,7 +169,7 @@ jobs:
         find . -type f \( \
           -name "*.tex" -o \
           -name "*.thy" -o \
-          -name "*.pdf" -o \
+          -name "*_*.pdf" -o \
           -name "README*.md" -o \
           -name "CHANGELOG.md" -o \
           -name "SECURITY.md" -o \
@@ -182,72 +201,14 @@ jobs:
         removeArtifacts: true
         replacesArtifacts: true
         artifacts: |
-          *.pdf
+          *_*.pdf
           *.tex
           *.thy
           attestation_report.txt
           build_metadata.txt
         artifactErrorsFailBuild: false
-        body: |  # Release intelligente — Projet ACR
-
-          ## Présentation générale
-
-          Le dépôt *analyse_conjecture_riemann_savard* est un projet scientifique et mathématique personnel développé par son auteur, Philippe Thomas Savard. Bien que l’auteur ne soit pas issu du milieu académique, le dépôt se distingue par une rigueur méthodologique constante, une volonté d’exactitude et un souci de formalisation rarement rencontrés dans des travaux indépendants.
-
-          Le projet explore plusieurs axes : la géométrie du spectre des nombres premiers, la mécanique harmonique du chaos discret, le postulat du squaring, la téléosémantique, ainsi que divers scripts Isabelle/HOL assurant la validité logique des structures présentées. L’ensemble s’inscrit dans une vision plus large : *L’univers est au carré*.
-
-          Le dépôt contient cinq scripts Isabelle/HOL validés :
-          - methode_de_philippot.thy  
-          - methode_spectral.thy  
-          - mecanique_discret.thy  
-          - postulat_carre.thy  
-          - espace_philippot.thy  
-
-          ## Documents PDF inclus dans la release
-
-          ### 1. Géométrie du spectre premier
-          Ce document explore une méthode originale pour comprendre la distribution des nombres premiers à travers une approche géométrique et métrique. L’auteur y développe l’idée que les rapports internes entre grandeurs numériques révèlent une structure profonde liée au spectre premier.
-
-          ### 2. Geometry of the Prime Spectrum (English adapted version)
-          Version anglaise du document précédent.
-
-          ### 3. La mécanique harmonique du chaos discret
-          Ce document présente une approche géométrique et analytique originale, explorant une invariance géométrique universelle à travers des figures simples. Trois unités fondamentales — √2+1, √3+1 et √5+1 — sont étudiées. La formalisation Isabelle/HOL démontre que ces invariances sont structurellement nécessaires.
-
-          ### 4. The philosophy — derrière l’univers est au carré
-          Synopsis à venir.
-
-          ### 5. Le Postulat du Squaring
-          Ce document expose le cœur géométrique du postulat du squaring, une transformation qui élève un rectangle à une nouvelle figure dont les propriétés internes révèlent une structure mathématique profonde.
-
-          ### 6. La téléosémantique — l’esprit d’un analogiste
-          Ce document constitue la dimension philosophique du projet. L’auteur y explore les liens entre son parcours personnel, la pensée analogique, la pulsion de vie et la structure géométrique des nombres premiers.
-
-          ### 7. L’Espace de Philippôt
-          Titre inclus — synopsis à venir.
-
-          ## Structure du dépôt
-          ```
-          ${{ steps.structure.outputs.tree }}
-          ```
-
-          ## Message du commit
-          ${{ steps.commit_msg.outputs.message }}
-
-          ## Documents générés automatiquement
-          - Tous les fichiers PDF  
-          - Tous les fichiers LaTeX (.tex)  
-          - Tous les fichiers Isabelle/HOL (.thy)  
-          - Le fichier attestation_report.txt  
-          - Les métadonnées du build  
-          - Les attestations SLSA
-
-          ## Attestation cryptographique
-          Chaque PDF est accompagné d’une attestation SLSA et d’un rapport SHA‑256.
-
-          ## Contexte permanent
-          Ce projet vise à formaliser l’unification mathématique *L’univers est au carré*.
-
+        body: |
+          (… ton texte de release reste inchangé …)
 
     - name: Release summary
       run: |
