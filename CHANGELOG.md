@@ -150,3 +150,14 @@ Quelle mise à jour prévoyez-vous ensuite ? Le nécéssaire sera mis en oeuvres
 **Travail à venir :**
 
 
+### Release — 2026-03-30 12:53
+
+**Changements apportés :**
+Les artifacts ne sont pas inclut dans la release et les mise a jour de la release n'inclut pas le contenu dans la release généré. Un erreur de procédure lors de la poussé (erreur manuel) empêche du a la manière utilisé pour la poussé des commit double poussé du commit entrainant l'erreur dû au tag immuable g�ênant la création de la release incluant le dit contenu générale?
+
+**Effet immédiat :**
+La méthode manuelle pour la poussé est maintenant acquise et bien inclut dans mes compétence et compréhension? Le projet d'inclure les atifacts a la release est a nouveau selon les plans de structuration de la release? La release créé lors du build du workflows par le GitHub actions rintègre de nouveau l'inclusion des artifacts a celle-ci et aux suivante. Le build.yml a d'ailleurs été modifié en conscéquence de cette nouvelle compréhension a mes comp;étences. Mise a jours structurante de la release .
+
+**Travail à venir :**
+Mise a jour complète de la release généré et modification a la police du CHANGELOG qui est a retravaillé.
+
