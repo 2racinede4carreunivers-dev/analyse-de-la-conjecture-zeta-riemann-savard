@@ -139,3 +139,14 @@ Quel est l'effet immédiat sur le dépôt ? Le note.sh a été mis a niveau afin
 **Travail à venir :**
 Quelle mise à jour prévoyez-vous ensuite ? Le nécéssaire sera mis en oeuvres pour que le dépôt concernant la release soit a niveau avec ce que représente le dépôt pour l'auteur et le nécessaire pour que le épôt soit le plus agréable a utiliser par l'utilisateur dans lefutur et reste une prioroité pour l'auteur Philippe Thomas Savard.
 
+### Mise a jour major de la release. — 2026-03-30 12:01
+
+**Changements apportés :**
+
+
+**Effet immédiat :**
+
+
+**Travail à venir :**
+
+
