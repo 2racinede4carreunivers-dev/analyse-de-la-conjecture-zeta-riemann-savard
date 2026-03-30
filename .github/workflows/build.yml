@@ -241,16 +241,7 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         tag: ${{ steps.read_tag.outputs.tag }}
-        name: "Release intelligente — Projet ACR"
-        allowUpdates: true
-        removeArtifacts: true
-        replacesArtifacts: true
-        artifacts: |
-          attestation_report.txt
-          build_metadata.txt
-        artifactErrorsFailBuild: false
-        body: ${{ steps.rel_body.outputs.body }}
-
+        
     - name: Release summary
       run: |
         echo "## Release mise à jour" >> $GITHUB_STEP_SUMMARY
