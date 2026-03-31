@@ -1,0 +1,270 @@
+name: Build Isabelle + LaTeX + Release intelligente
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install minimal TeX Live + pygments
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          texlive-latex-base \
+          texlive-latex-recommended \
+          texlive-latex-extra \
+          texlive-fonts-recommended \
+          python3-pygments
+
+    - name: Install Isabelle 2024
+      run: |
+        wget https://isabelle.in.tum.de/website-Isabelle2024/dist/Isabelle2024_linux.tar.gz
+        tar -xzf Isabelle2024_linux.tar.gz
+        mv Isabelle2024 isabelle
+        echo "$PWD/isabelle/bin" >> $GITHUB_PATH
+
+    - name: Isabelle build (certification HOL)
+      run: |
+        if [ -f ROOT ]; then
+          isabelle build -D .
+        else
+          shopt -s nullglob
+          for thy in *.thy; do
+            isabelle build -b -d . "$thy" || true
+          done
+        fi
+
+    - name: Compile LaTeX (minted + TOC)
+      run: |
+        shopt -s nullglob
+        for file in *.tex; do
+          pdflatex -shell-escape -interaction=nonstopmode "$file" || true
+          pdflatex -shell-escape -interaction=nonstopmode "$file" || true
+          pdflatex -shell-escape -interaction=nonstopmode "$file" || true
+        done
+
+    - name: Generate attestation report (SHA-256 des PDF)
+      run: |
+        shopt -s nullglob
+        if ls *.pdf >/dev/null 2>&1; then
+          sha256sum *.pdf > attestation_report.txt
+        else
+          echo "Aucun PDF généré." > attestation_report.txt
+        fi
+
+    - name: Generate build metadata
+      run: |
+        echo "Build provenance" > build_metadata.txt
+        echo "Commit SHA : $(git rev-parse HEAD)" >> build_metadata.txt
+        echo "Branche : $(git rev-parse --abbrev-ref HEAD)" >> build_metadata.txt
+        echo "Date : $(date -u)" >> build_metadata.txt
+        echo "" >> build_metadata.txt
+        echo "PDF générés :" >> build_metadata.txt
+        ls *.pdf >> build_metadata.txt 2>/dev/null || echo "Aucun PDF" >> build_metadata.txt
+        echo "" >> build_metadata.txt
+        echo "SHA-256 des PDF :" >> build_metadata.txt
+        sha256sum *.pdf >> build_metadata.txt 2>/dev/null || echo "Aucun hash" >> build_metadata.txt
+
+    - name: Upload attestation report
+      uses: actions/upload-artifact@v4
+      with:
+        name: attestation-report
+        path: attestation_report.txt
+
+    - name: Upload build metadata
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-metadata
+        path: build_metadata.txt
+
+    - name: Generate build provenance
+      uses: actions/attest-build-provenance@v1
+      with:
+        subject-path: "*.pdf"
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Download attestation report
+      uses: actions/download-artifact@v4
+      with:
+        name: attestation-report
+        path: .
+
+    - name: Download build metadata
+      uses: actions/download-artifact@v4
+      with:
+        name: build-metadata
+        path: .
+
+    - name: Lire le tag généré par note.sh
+      id: read_tag
+      run: |
+        if [ ! -f .next_tag ]; then
+          echo "ERREUR : le fichier .next_tag est manquant."
+          exit 1
+        fi
+        TAG=$(cat .next_tag)
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+    - name: Extraire le message du commit
+      id: commit_msg
+      run: |
+        msg=$(git log -1 --pretty=%B | tr '\n' ' ' | sed 's/"/“/g')
+        echo "message=$msg" >> $GITHUB_OUTPUT
+
+    - name: Generate filtered repository structure
+      id: structure
+      run: |
+        echo "tree<<EOF" >> $GITHUB_OUTPUT
+        find . -type f \( \
+          -name "*.tex" -o \
+          -name "*.thy" -o \
+          -name "README*.md" -o \
+          -name "CHANGELOG.md" -o \
+          -name "SECURITY.md" -o \
+          -name "algorithme_methodologie.md" -o \
+          -name "guide_*.md" \
+        \) | sed 's|^\./||' | sort | awk '
+          BEGIN{FS="/" }
+          {
+            indent = ""
+            for(i=1;i<NF;i++) indent = indent "  "
+            print indent "├── " $NF
+          }
+        ' >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Generate per-TEX summaries (12–20 lignes)
+      id: summaries
+      run: |
+        echo "summaries<<EOF" >> $GITHUB_OUTPUT
+        shopt -s nullglob
+        for tex in *.tex; do
+          base="${tex%.tex}"
+          echo "### Résumé : ${base}" 
+          echo ""
+          # Filtrer les lignes purement techniques LaTeX et prendre 12–20 lignes utiles
+          awk '
+            /^[[:space:]]*$/ { next } 
+            /^\\documentclass/ { next }
+            /^\\usepackage/ { next }
+            /^\\begin{document}/ { next }
+            /^\\end{document}/ { next }
+            { print }
+          ' "$tex" | head -n 20 | awk 'NR<=12 || NR<=20' 
+          echo ""
+          echo "---"
+          echo ""
+        done
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Generate teleosemantic answers
+      id: teleo
+      run: |
+        echo "teleo<<EOF" >> $GITHUB_OUTPUT
+        echo "## Téléosémantique du dépôt"
+        echo ""
+        echo "### 1. Postmortem de la version précédente"
+        echo ""
+        echo "- Dernier tag : $(git describe --tags --abbrev=0 2>/dev/null || echo \"Aucun tag précédent\")"
+        echo "- Fichiers modifiés depuis le dernier commit :"
+        git diff --name-status HEAD~1 HEAD 2>/dev/null || echo "  (Diff non disponible)"
+        echo ""
+        echo "### 2. Changements apportés par la mise à jour actuelle"
+        echo ""
+        echo "- Message du commit : $(git log -1 --pretty=%B | tr '\n' ' ')"
+        echo "- Fichiers touchés :"
+        git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "  (Non disponible)"
+        echo ""
+        echo "### 3. Carte téléosémantique de l’esprit du dépôt"
+        echo ""
+        echo "- Domaines principaux détectés :"
+        find . -type f \( -name \"*.tex\" -o -name \"*.thy\" -o -name \"*.md\" \) | sed 's|^\./||' | sort | head -n 50
+        echo ""
+        echo "- Organisation logique :"
+        find . -maxdepth 3 -type d | sed 's|^\./||' | sort
+        echo ""
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Construire le corps de la release
+      id: rel_body
+      run: |
+        echo "body<<EOF" >> $GITHUB_OUTPUT
+        echo "## Mise à jour automatique du projet ACR"
+        echo ""
+        echo "**Tag généré :** ${{ steps.read_tag.outputs.tag }}"
+        echo ""
+        echo "**Message du commit :** ${{ steps.commit_msg.outputs.message }}"
+        echo ""
+        echo "### Structure du dépôt"
+        echo ""
+        echo "${{ steps.structure.outputs.tree }}"
+        echo ""
+        echo "### Attestation et métadonnées"
+        echo ""
+        echo "- Rapport SHA-256 : \`attestation_report.txt\`"
+        echo "- Métadonnées de build : \`build_metadata.txt\`"
+        echo ""
+        echo "## Résumés des documents PDF (à partir des .tex)"
+        echo ""
+        echo "${{ steps.summaries.outputs.summaries }}"
+        echo ""
+        echo "${{ steps.teleo.outputs.teleo }}"
+        echo ""
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Create or Update Release
+      id: rel
+      uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ steps.read_tag.outputs.tag }}
+        
+    - name: Release summary
+      run: |
+        echo "## Release mise à jour" >> $GITHUB_STEP_SUMMARY
+        echo "- Tag : ${{ steps.read_tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Lien : ${{ steps.rel.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY
+        
+    - name: Télécharger tous les artefacts pour la release
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Mettre à jour la release avec les artefacts
+      uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ steps.read_tag.outputs.tag }}
+        name: ${{ steps.read_tag.outputs.tag }}
+        body: ${{ steps.rel_body.outputs.body }}
+        artifacts: "artifacts/**/*"
+        allowUpdates: true
+        replacesArtifacts: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Publier l’attestation SLSA
+      uses: actions/attest-build-provenance@v1
+      with:
+        subject-path: "artifacts/**/*.pdf"

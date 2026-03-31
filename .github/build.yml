@@ -1,0 +1,58 @@
+name: Build and Attest
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Checkout du dépôt
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # 2. Installer TexLive minimal
+    - name: Install minimal TeXLive
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y texlive-base texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
+
+    # 3. Installer Isabelle minimal (headless)
+    - name: Install Isabelle (minimal)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget unzip
+        wget https://isabelle.in.tum.de/dist/Isabelle2024_linux.tar.gz
+        tar -xzf Isabelle2024_linux.tar.gz
+        echo "$PWD/Isabelle2024/bin" >> $GITHUB_PATH
+
+    # 4. Compiler les fichiers .tex
+    - name: Compile LaTeX documents
+      run: |
+        mkdir -p build
+        for f in *.tex; do
+          echo "Compiling $f"
+          pdflatex -interaction=nonstopmode -halt-on-error "$f"
+          mv "${f%.tex}.pdf" build/ || true
+        done
+
+    # 5. Compiler les fichiers .thy (Isabelle)
+    - name: Build Isabelle theories
+      run: |
+        Isabelle2024/bin/isabelle build -D .
+
+    # 6. Téléverser les artefacts PDF
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: pdf-documents
+        path: build/
+
+    # 7. Générer l’attestation SLSA v1
+    - name: Generate SLSA provenance
+      uses: actions/attest-build-provenance@v1
+      with:
+        subject-path: "build/*"
