@@ -194,3 +194,14 @@ Mise a jour complète de la release généré et modification a la police du CHA
 **Travail à venir :**
 
 
+### Update CHANGELOG.md — 2026-03-30 21:31
+
+**Changements apportés :**
+la release e était généré depuis le github actions automatiquement et le tag depuis note.sh qui pose 6 questions pour la release et le tag.
+
+**Effet immédiat :**
+Le projet de release est maintenant compromis et annulé. Le github action génère l'attestation la certification et compile les .tex et .thy seulement. Le reste du dépôt rest inchangé.
+
+**Travail à venir :**
+La reprise de la maintenance du dépôt.
+
