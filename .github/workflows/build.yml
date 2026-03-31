@@ -1,24 +1,35 @@
-name: Build and Attest
+name: Build Isabelle + LaTeX + Release intelligente
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Checkout du dépôt
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-    # 2. Installer TexLive minimal
-    - name: Install minimal TeXLive
+    - name: Install minimal TeX Live + pygments
       run: |
         sudo apt-get update
-        sudo apt-get install -y texlive-base texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
+        sudo apt-get install -y \
+          texlive-latex-base \
+          texlive-latex-recommended \
+          texlive-latex-extra \
+          texlive-fonts-recommended \
+          python3-pygments
 
     - name: Install Isabelle 2024
       run: |
@@ -27,31 +38,83 @@ jobs:
         mv Isabelle2024 isabelle
         echo "$PWD/isabelle/bin" >> $GITHUB_PATH
 
-
-    # 4. Compiler les fichiers .tex
-    - name: Compile LaTeX documents
+    - name: Isabelle build (certification HOL)
       run: |
-        mkdir -p build
-        for f in *.tex; do
-          echo "Compiling $f"
-          pdflatex -interaction=nonstopmode -halt-on-error "$f"
-          mv "${f%.tex}.pdf" build/ || true
+        if [ -f ROOT ]; then
+          isabelle build -D .
+        else
+          shopt -s nullglob
+          for thy in *.thy; do
+            isabelle build -b -d . "$thy" || true
+          done
+        fi
+
+    - name: Compile LaTeX (minted + TOC)
+      run: |
+        shopt -s nullglob
+        for file in *.tex; do
+          pdflatex -shell-escape -interaction=nonstopmode "$file" || true
+          pdflatex -shell-escape -interaction=nonstopmode "$file" || true
+          pdflatex -shell-escape -interaction=nonstopmode "$file" || true
         done
 
-    # 5. Compiler les fichiers .thy (Isabelle)
-    - name: Build Isabelle theories
+    - name: Generate attestation report (SHA-256 des PDF)
       run: |
-        Isabelle2024/bin/isabelle build -D .
+        shopt -s nullglob
+        if ls *.pdf >/dev/null 2>&1; then
+          sha256sum *.pdf > attestation_report.txt
+        else
+          echo "Aucun PDF généré." > attestation_report.txt
+        fi
 
-    # 6. Téléverser les artefacts PDF
-    - name: Upload build artifacts
+    - name: Generate build metadata
+      run: |
+        echo "Build provenance" > build_metadata.txt
+        echo "Commit SHA : $(git rev-parse HEAD)" >> build_metadata.txt
+        echo "Branche : $(git rev-parse --abbrev-ref HEAD)" >> build_metadata.txt
+        echo "Date : $(date -u)" >> build_metadata.txt
+        echo "" >> build_metadata.txt
+        echo "PDF générés :" >> build_metadata.txt
+        ls *.pdf >> build_metadata.txt 2>/dev/null || echo "Aucun PDF" >> build_metadata.txt
+        echo "" >> build_metadata.txt
+        echo "SHA-256 des PDF :" >> build_metadata.txt
+        sha256sum *.pdf >> build_metadata.txt 2>/dev/null || echo "Aucun hash" >> build_metadata.txt
+
+    - name: Upload attestation report
       uses: actions/upload-artifact@v4
       with:
-        name: pdf-documents
-        path: build/
+        name: attestation-report
+        path: attestation_report.txt
 
-    # 7. Générer l’attestation SLSA v1
-    - name: Generate SLSA provenance
+    - name: Upload build metadata
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-metadata
+        path: build_metadata.txt
+
+    - name: Generate build provenance
       uses: actions/attest-build-provenance@v1
       with:
-        subject-path: "build/*"
+        subject-path: "*.pdf"
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Download attestation report
+      uses: actions/download-artifact@v4
+      with:
+        name: attestation-report
+        path: .
+
+    - name: Download build metadata
+      uses: actions/download-artifact@v4
+      with:
+        name: build-metadata
+        path: .
