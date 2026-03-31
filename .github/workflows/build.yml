@@ -21,7 +21,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install minimal TeX Live + pygments
+    - name: Install minimal TeX Live + pygments + français
       run: |
         sudo apt-get update
         sudo apt-get install -y \
@@ -29,42 +29,61 @@ jobs:
           texlive-latex-recommended \
           texlive-latex-extra \
           texlive-fonts-recommended \
+          texlive-lang-french \
           python3-pygments
 
     - name: Install Isabelle 2024
       run: |
-        wget https://isabelle.in.tum.de/website-Isabelle2024/dist/Isabelle2024_linux.tar.gz
+        wget https://isabelle.in.tum.de/dist/Isabelle2024_linux.tar.gz
         tar -xzf Isabelle2024_linux.tar.gz
         mv Isabelle2024 isabelle
         echo "$PWD/isabelle/bin" >> $GITHUB_PATH
 
     - name: Isabelle build (certification HOL)
       run: |
+        set -e
         if [ -f ROOT ]; then
           isabelle build -D .
         else
           shopt -s nullglob
-          for thy in *.thy; do
-            isabelle build -b -d . "$thy" || true
+          for thy in metode_spectral.thy methode_de_philippot.thy mecanique_discret.thy postulat_carre.thy; do
+            if [ -f "$thy" ]; then
+              echo "Building Isabelle theory: $thy"
+              isabelle build -b -d . "$thy"
+            fi
           done
         fi
 
-    - name: Compile LaTeX (minted + TOC)
+    - name: Compile LaTeX (minted + TOC) et déplacer les PDF
       run: |
-        shopt -s nullglob
-        for file in *.tex; do
-          pdflatex -shell-escape -interaction=nonstopmode "$file" || true
-          pdflatex -shell-escape -interaction=nonstopmode "$file" || true
-          pdflatex -shell-escape -interaction=nonstopmode "$file" || true
+        set -e
+        mkdir -p build
+        for file in \
+          geometrie_du_spectre_premier.tex \
+          geometry_prime_spectrum.tex \
+          pilosophy_geometry_of_prime_number.tex \
+          telosemantique_analogiste_spectre_premier.tex \
+          mecanique_chaos_discret.tex \
+          postulat_univers_carre.tex; do
+          if [ -f "$file" ]; then
+            echo "Compiling $file"
+            pdflatex -shell-escape -interaction=nonstopmode "$file"
+            pdflatex -shell-escape -interaction=nonstopmode "$file"
+            pdflatex -shell-escape -interaction=nonstopmode "$file"
+            pdf="${file%.tex}.pdf"
+            if [ -f "$pdf" ]; then
+              mv "$pdf" build/
+            fi
+          fi
         done
 
     - name: Generate attestation report (SHA-256 des PDF)
       run: |
-        shopt -s nullglob
+        cd build
         if ls *.pdf >/dev/null 2>&1; then
-          sha256sum *.pdf > attestation_report.txt
+          sha256sum *.pdf > ../attestation_report.txt
         else
-          echo "Aucun PDF généré." > attestation_report.txt
+          echo "Aucun PDF généré." > ../attestation_report.txt
         fi
 
     - name: Generate build metadata
@@ -75,10 +94,16 @@ jobs:
         echo "Date : $(date -u)" >> build_metadata.txt
         echo "" >> build_metadata.txt
         echo "PDF générés :" >> build_metadata.txt
-        ls *.pdf >> build_metadata.txt 2>/dev/null || echo "Aucun PDF" >> build_metadata.txt
+        ls build/*.pdf >> build_metadata.txt 2>/dev/null || echo "Aucun PDF" >> build_metadata.txt
         echo "" >> build_metadata.txt
         echo "SHA-256 des PDF :" >> build_metadata.txt
-        sha256sum *.pdf >> build_metadata.txt 2>/dev/null || echo "Aucun hash" >> build_metadata.txt
+        sha256sum build/*.pdf >> build_metadata.txt 2>/dev/null || echo "Aucun hash" >> build_metadata.txt
+
+    - name: Upload PDF artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: pdf-documents
+        path: build/*.pdf
 
     - name: Upload attestation report
       uses: actions/upload-artifact@v4
@@ -92,10 +117,26 @@ jobs:
         name: build-metadata
         path: build_metadata.txt
 
-    - name: Generate build provenance
+    - name: Generate build provenance (SLSA v1 pour .tex, .thy, .pdf)
       uses: actions/attest-build-provenance@v1
       with:
-        subject-path: "*.pdf"
+        subject-path: |
+          geometrie_du_spectre_premier.tex
+          geometry_prime_spectrum.tex
+          pilosophy_geometry_of_prime_number.tex
+          telosemantique_analogiste_spectre_premier.tex
+          mecanique_chaos_discret.tex
+          postulat_univers_carre.tex
+          metode_spectral.thy
+          methode_de_philippot.thy
+          mecanique_discret.thy
+          postulat_carre.thy
+          build/geometrie_du_spectre_premier.pdf
+          build/geometry_prime_spectrum.pdf
+          build/pilosophy_geometry_of_prime_number.pdf
+          build/telosemantique_analogiste_spectre_premier.pdf
+          build/mecanique_chaos_discret.pdf
+          build/postulat_univers_carre.pdf
 
   release:
     needs: build
