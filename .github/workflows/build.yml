@@ -23,11 +23,10 @@ jobs:
     # 3. Installer Isabelle minimal (headless)
     - name: Install Isabelle (minimal)
       run: |
-        sudo apt-get update
-        sudo apt-get install -y wget unzip
-        wget https://isabelle.in.tum.de/dist/Isabelle2024_linux.tar.gz
-        tar -xzf Isabelle2024_linux.tar.gz
-        echo "$PWD/Isabelle2024/bin" >> $GITHUB_PATH
+        wget https://isabelle.in.tum.de/dist/Isabelle2026_linux.tar.gz
+          tar -xzf Isabelle2026_linux.tar.gz
+          mv Isabelle2026 isabelle
+          echo "$PWD/isabelle/bin" >> $GITHUB_PATH
 
     # 4. Compiler les fichiers .tex
     - name: Compile LaTeX documents
