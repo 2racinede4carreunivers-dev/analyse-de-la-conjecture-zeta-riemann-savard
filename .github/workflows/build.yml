@@ -46,7 +46,7 @@ jobs:
           isabelle build -D .
         else
           shopt -s nullglob
-          for thy in metode_spectral.thy methode_de_philippot.thy mecanique_discret.thy postulat_carre.thy; do
+          for thy in methode_spectral.thy methode_de_philippot.thy mecanique_discret.thy postulat_carre.thy; do
             if [ -f "$thy" ]; then
               echo "Building Isabelle theory: $thy"
               isabelle build -b -d . "$thy"
@@ -60,7 +60,7 @@ jobs:
         mkdir -p build
         for file in \
           geometrie_du_spectre_premier.tex \
-          geometry_prime_spectrum.tex \
+          prime_spectrum_geometry.tex \
           pilosophy_geometry_of_prime_number.tex \
           telosemantique_analogiste_spectre_premier.tex \
           mecanique_chaos_discret.tex \
@@ -122,17 +122,17 @@ jobs:
       with:
         subject-path: |
           geometrie_du_spectre_premier.tex
-          geometry_prime_spectrum.tex
+          prime_spectrum_geometry.tex
           pilosophy_geometry_of_prime_number.tex
           telosemantique_analogiste_spectre_premier.tex
           mecanique_chaos_discret.tex
           postulat_univers_carre.tex
-          metode_spectral.thy
+          methode_spectral.thy
           methode_de_philippot.thy
           mecanique_discret.thy
           postulat_carre.thy
           build/geometrie_du_spectre_premier.pdf
-          build/geometry_prime_spectrum.pdf
+          build/prime_spectrum_geometry.pdf
           build/pilosophy_geometry_of_prime_number.pdf
           build/telosemantique_analogiste_spectre_premier.pdf
           build/mecanique_chaos_discret.pdf
