@@ -205,3 +205,14 @@ Le projet de release est maintenant compromis et annulé. Le github action gén�
 **Travail à venir :**
 La reprise de la maintenance du dépôt.
 
+### Update CHANGELOG.md — 2026-03-31 03:58
+
+**Changements apportés :**
+La release créé de l'actions du GitHub a partir du workflows .yml? La relase ainsi créé génère run résumé de chaque PDF en plus de tous la structure pré déterminé du modèle a suivre par le GitHub actions lord du build. Le tag de la release étant mis a jour manuellement a chaque commit par le note.sh garentissant que l'errue immuable imposé par la configuration du GitHub actions ne ce produis pas. Une note au carnet de mise a jours est inséré a chaque commit poussé ver le GitHub.
+
+**Effet immédiat :**
+La structure des fichiers incluant le .yml ont été archoivés le projet de générer une release automatique a chaque nouveau commit poussé est compromis. La release automatique ne fera plus partie du workflows a partir de ce commit. La note au carnet de mise a jour CHANGELOG poursuit a ce configurer de manière semi-manuelle a partir du note .sh en répondant aux trois questions dans le terminal. Les fichier pour la release automatique généré lors du build du workflows ont été archivé dans le dossie archive sur le dépôt. Le workflows automatise toujours la compilation la certification et l'attestation des fichier .tex et .thy. Un rapport d'attestation SLSA sha 256 est génér a tous les construction sur le GitHub Action une attestation de la siganture crypthographique qui atteste que les PDF sont bien natif du dépôt et de la branch uniquement dprovenant du dépôt signature démontrant que Savard en est bien l'auteur. La license du projet reste toujours lam même.
+
+**Travail à venir :**
+Le repositionnement suite a la mise a jour majeur du dépôt qui s'actualise le positionnement des fichiers sera une priorité pour les heurs a venir afin de garentir que le dépôt est opérable le plus agréablement possible pour l'utilisateurs et tous autre entiter ou organisation souhaitant le faire.
+
