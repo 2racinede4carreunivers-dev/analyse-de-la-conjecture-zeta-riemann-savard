@@ -20,13 +20,13 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y texlive-base texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
 
-    # instaler isabelle 2025
-    - name: Install Isabelle 2025
+    - name: Install Isabelle 2024
       run: |
-        wget https://isabelle.in.tum.de/dist/Isabelle2025_linux.tar.gz
-        tar -xzf Isabelle2025_linux.tar.gz
-        mv Isabelle2025 isabelle
-        echo "$PWD/isabelle/bin >> $GITHUB_path"
+        wget https://isabelle.in.tum.de/website-Isabelle2024/dist/Isabelle2024_linux.tar.gz
+        tar -xzf Isabelle2024_linux.tar.gz
+        mv Isabelle2024 isabelle
+        echo "$PWD/isabelle/bin" >> $GITHUB_PATH
+
 
     # 4. Compiler les fichiers .tex
     - name: Compile LaTeX documents
